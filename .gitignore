@@ -1,0 +1,12 @@
+# Default ignored files
+.idea
+junk.py
+junk.sh
+/workspace.xml
+./data
+*.DS_Store
+__pycache__/
+*.py[cod]
+models/__pycache__
+output_default
+data/
