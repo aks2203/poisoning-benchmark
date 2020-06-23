@@ -7,8 +7,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 #### Frozen Feature Extractor
 | Attack                        | White-box (%)   | Grey-box (%)   | Black-box (%)|
 | ------------------            |---------------- | -------------- |--------------|
-|Featrue Collision              | 16.0            | 7.0            | 3.50         |
-|Featrue Collision  Ensembled   | 13.0            | 9.0            | 6.0          |
+|Feature Collision              | 16.0            | 7.0            | 3.50         |
+|Feature Collision  Ensembled   | 13.0            | 9.0            | 6.0          |
 |Convex Polytope                | 24.0            | 7.0            | 4.5          |
 |Convex Polytope Ensembled      | 20.0            | 8.0            | 12.5         |
 |Clean Label Backdoor           | 3.0             | 6.0            | 3.5          |
@@ -17,8 +17,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 #### End-to-end Fine-tuning
 | Attack                        | White-box (%)     | Grey-box (%)   | Black-box (%) |
 | ------------------            |----------------   | -------------- |-----------   |
-|Featrue Collision              | 4.0               | 3.0            | 3.5          |
-|Featrue Collision  Ensembled   | 7.0               | 4.0            | 5.0          |
+|Feature Collision              | 4.0               | 3.0            | 3.5          |
+|Feature Collision  Ensembled   | 7.0               | 4.0            | 5.0          |
 |Convex Polytope                | 17.0              | 7.0            | 4.5          |
 |Convex Polytope Ensembled      | 14.0              | 4.0            | 10.5         |
 |Clean Label Backdoor           | 3.0               | 2.0            | 1.5          |
@@ -27,7 +27,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 #### From Scratch Training
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
 | --------------------------| --------------    |-----------        |-----------|----------- |
-|Featrue Collision          |  0                |  1                |  3        |  1.33      |   
+|Feature Collision          |  0                |  1                |  3        |  1.33      |   
 |Convex Polytope            |  0                |  1                |  1        |  0.67      |   
 |Clean Label Backdoor       |  0                |  1                |  2        |  1.00      | 
 |Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      | 
