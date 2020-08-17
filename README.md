@@ -66,6 +66,8 @@ This allows users to test their poisons in a variety of settings, not only the b
 ## Benchmarking A Backdoor or Triggerless Attack
 To compute benchmark scores, craft 100 batches of poisons using the setup pickles (for transfer learning: poison_setups_transfer_learning.pickle, for from-scratch training: poison_setups_from_scratch.pickle), and run the following. 
 
+*Important Note:* In order to be on the leaderboard, new submissions must host their poisoned datasets online for public access, so results can be corroborated without producing new poisons. Consider a Dropbox or GoogleDrive folder with all 100 batches of poisons.
+
 For one trial of transfer learning poisons:
 ```eval
 python benchmark_test.py --poisons_path <path_to_poison_directory>
