@@ -123,7 +123,7 @@ def main(args):
         args.lr = 0.1
         args.lr_schedule = [100, 150]
         args.epochs = 200
-        args.model_path = ""
+        args.model_path = None
         args.output = os.path.join(out_dir, "fst")
 
         args.model = "resnet18"
