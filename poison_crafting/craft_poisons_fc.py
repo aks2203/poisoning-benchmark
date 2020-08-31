@@ -7,7 +7,7 @@
 # Reference: A. Shafahi, W. R. Huang, M. Najibi, O. Suciu, C. Studer,
 #     T. Dumitras, and T. Goldstein. Poison frogs! targeted clean-label
 #     poisoning attacks on neural networks.
-#     In Advances in Neural Information Processing Systems, pages 6103–6113, 2018.
+#     In Advances in Neural Information Processing Systems, pages 6103-6113, 2018.
 ############################################################
 import argparse
 import copy
