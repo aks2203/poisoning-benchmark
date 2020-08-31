@@ -89,13 +89,21 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_test = get_transform(False, False)
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
         )
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
+        )
+    elif args.dataset.lower() == "tinyimagenet":
+        transform_test = get_transform(False, False, dataset=args.dataset)
+        trainset = torchvision.datasets.ImageFolder(
+            "./data/tiny-imagenet-200/train", transform_test
+        )
+        testset = torchvision.datasets.ImageFolder(
+            "./data/tiny-imagenet-200/test", transform_test
         )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_clbd.py.")

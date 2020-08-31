@@ -26,7 +26,7 @@ from learning_module import (
     data_mean_std_dict,
     get_transform,
     to_log_file,
-    un_normalize_cifar,
+    un_normalize_data,
     load_model_from_checkpoint,
 )
 from models import *
@@ -46,7 +46,7 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.datasetlower() == "cifar10":
         transform_test = get_transform(args.normalize, False)
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
@@ -54,6 +54,10 @@ def main(args):
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
         )
+    elif args.dataset.lower() == "tinyimagenet":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/train", transform_test)
+        testset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/test", transform_test)
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_cp.py.")
         sys.exit()
@@ -144,10 +148,10 @@ def main(args):
 
     # move poisons to PIL format
     if args.normalize:
-        target = un_normalize_cifar(target.squeeze(0))
+        target = un_normalize_data(target.squeeze(0))
         for i in range(len(poison_tuple_list)):
             poison_tuple_list[i] = (
-                transforms.ToPILImage()(un_normalize_cifar(poison_tuple_list[i][0])),
+                transforms.ToPILImage()(un_normalize_data(poison_tuple_list[i][0])),
                 poison_tuple_list[i][1],
             )
     else:
@@ -165,7 +169,7 @@ def main(args):
             torch.max(
                 torch.abs(
                     transforms.ToTensor()(poison_tensor)
-                    - un_normalize_cifar(base_tensor_list[idx].cpu())
+                    - un_normalize_data(base_tensor_list[idx].cpu())
                 )
             ).item()
         )

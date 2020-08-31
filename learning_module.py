@@ -18,8 +18,9 @@ import csv
 import numpy as np
 
 data_mean_std_dict = {
-    "CIFAR10": ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    "CIFAR100": ((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
+    "cifar10": ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    "cifar100": ((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
+    "tinyimagenet": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262))
 }
 
 
@@ -256,8 +257,9 @@ def get_transform(normalize, augment, dataset="CIFAR10"):
         Pytorch tranforms.Compose with list of all transformations
     """
 
+    dataset = dataset.lower()
     mean, std = data_mean_std_dict[dataset]
-    cropsize = 32
+    cropsize = {"cifar10": 32, "cifar100": 32, "tinyimagenet": 64}[dataset]
     padding = 4
 
     if normalize and augment:
@@ -324,6 +326,16 @@ def get_model(model, dataset="CIFAR10"):
                 "Model not yet implemented. Exiting from learning_module.get_model()."
             )
             sys.exit()
+
+    elif dataset == "tinyimagenet":
+        if model == "resnet34":
+            net = resnet34(num_classes=200)
+        elif model == "resnet50":
+            net = resnet50(num_classes=200)
+        elif model == "vgg16":
+            net = vgg16(num_classes=200)
+        elif model == "mobilenet_v2":
+            net = MobileNetV2(num_classes=200)
     else:
         print("Dataset not yet implemented. Exiting from learning_module.get_model().")
         sys.exit()
@@ -347,29 +359,32 @@ def load_model_from_checkpoint(model, model_path, dataset="CIFAR10"):
     return net
 
 
-def un_normalize_cifar(x):
-    """Function to de-normalise the CIFAR data
+def un_normalize_data(x, dataset="cifar10"):
+    """Function to de-normalise image data
     input:
         x:      Tensor to be de-normalised
     return:
         De-normalised tensor
     """
-    inv_cifar_mean = (-0.4914 / 0.2023, -0.4822 / 0.1994, -0.4465 / 0.2010)
-    inv_cifar_std = (1.0 / 0.2023, 1.0 / 0.1994, 1.0 / 0.2010)
-    transform_unnormalize = transforms.Normalize(inv_cifar_mean, inv_cifar_std)
-    return transform_unnormalize(x)
+    dataset = dataset.lower()
+    mean, std = data_mean_std_dict[dataset]
+    inv_mean = [-mean[i] / std[i] for i in range(len(mean))]
+    inv_std = [1.0 / std[i] for i in range(len(std))]
+    transform = transforms.Compose([transforms.Normalize(inv_mean, inv_std)])
+    return transform(x)
 
 
-def normalize_cifar(x):
-    """Function to normalise the CIFAR data
+def normalize_data(x, dataset="cifar10"):
+    """Function to normalise image data
     input:
         x:      Tensor to be normalised
     return:
         Normalised tensor
     """
-    cifar_mean, cifar_std = data_mean_std_dict["CIFAR10"]
-    transform_normalize = transforms.Normalize(cifar_mean, cifar_std)
-    return transform_normalize(x)
+    dataset = dataset.lower()
+    cifar_mean, cifar_std = data_mean_std_dict[dataset]
+    transform = transforms.Compose([transforms.Normalize(cifar_mean, cifar_std)])
+    return transform(x)
 
 
 def compute_perturbation_norms(poisons, dataset, base_indices):

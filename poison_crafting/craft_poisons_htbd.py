@@ -97,6 +97,10 @@ def main(args):
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
         )
+    elif args.dataset == "tinyimagenet":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/train", transform_test)
+        testset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/test", transform_test)
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_htbd.py.")
         sys.exit()
@@ -150,34 +154,37 @@ def main(args):
     for i in range(0, len(base_imgs), batch_size):
 
         remaining = np.min((batch_size, len(base_imgs) - i))
-        input1 = target_imgs[i : i + remaining]
-        input2 = base_imgs[i : i + remaining]
-        input1 = input1.to(device)
-        input2 = input2.to(device)
+        input_target_imgs = target_imgs[i : i + remaining]
+        input_bases = base_imgs[i : i + remaining]
+        input_target_imgs = input_target_imgs.to(device)
+        input_bases = input_bases.to(device)
 
-        for z in range(input1.size(0)):
-            # paste the trigger on input1
-            input1[
+        for z in range(input_target_imgs.size(0)):
+            # paste the trigger on input_target_imgs
+            input_target_imgs[
                 z,
                 :,
                 start_y : start_y + args.patch_size,
                 start_x : start_x + args.patch_size,
             ] = trigger
 
-        # get features of input1
+        # get features of input_target_imgs
         if args.normalize:
-            input1 = normalization_net(input1)
-        feat1 = net(input1, penu=True)
+            input_target_imgs = normalization_net(input_target_imgs)
+        feat1 = net(input_target_imgs, penu=True)
         feat1 = feat1.detach().clone()
 
         for j in range(args.crafting_iters):
-            input2.requires_grad_()
+            input_bases.requires_grad_()
             lr1 = adjust_learning_rate(lr, j, args.dataset)
 
-            # get features of input2
+            # get features of input_bases
             if args.normalize:
-                input2 = normalization_net(input2)
-            feat2 = net(input2, penu=True)
+                input_bases_proc = normalization_net(input_bases)
+            else:
+                input_bases_proc = input_bases
+
+            feat2 = net(input_bases_proc, penu=True)
             feat11 = feat1.clone()
             dist = torch.cdist(feat1, feat2)
             for _ in range(feat2.size(0)):
@@ -187,14 +194,14 @@ def main(args):
                 dist[dist_min_index[0], dist_min_index[1]] = 1e5
 
             loss = torch.norm(feat1 - feat2) ** 2
-            losses.update(loss.item(), input1.size(0))
+            losses.update(loss.item(), input_target_imgs.size(0))
+            loss.backward()
 
-            grad = torch.autograd.grad(loss, [input2])[0]
-            input2 = input2 - lr1 * grad
-            pert = input2 - base_imgs[i : i + remaining]
+            input_bases = input_bases - lr1 * lr1.grad
+            pert = input_bases - base_imgs[i : i + remaining]
             pert = torch.clamp(pert, -args.epsilon, args.epsilon).detach_()
-            input2 = pert + base_imgs[i : i + remaining]
-            input2 = input2.clamp(0, 1)
+            input_bases = pert + base_imgs[i : i + remaining]
+            input_bases = input_bases.clamp(0, 1)
 
             if j % 100 == 0:
                 logging.info(
@@ -205,10 +212,10 @@ def main(args):
 
             if loss.item() < 10 or j == (args.crafting_iters - 1):
                 logging.info("Max_Loss: {}".format(loss.item()))
-                for k in range(input2.size(0)):
+                for k in range(input_bases.size(0)):
                     poisoned_tuples.append(
                         (
-                            transforms.ToPILImage()(input2[k].cpu()),
+                            transforms.ToPILImage()(input_bases[k].cpu()),
                             int(base_labels[i + k]),
                         )
                     )

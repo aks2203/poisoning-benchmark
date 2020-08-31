@@ -25,8 +25,8 @@ from learning_module import get_transform
 from learning_module import (
     to_log_file,
     now,
-    normalize_cifar,
-    un_normalize_cifar,
+    normalize_data,
+    un_normalize_data,
     load_model_from_checkpoint,
 )
 
@@ -48,7 +48,7 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_test = get_transform(args.normalize, False)
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
@@ -56,6 +56,10 @@ def main(args):
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
         )
+    elif args.dataset.lower() == "tinyimagenet":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/train", transform_test)
+        testset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/test", transform_test)
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_fc.py.")
         sys.exit()
@@ -107,13 +111,13 @@ def main(args):
 
     # fill list of tuples of poison images and labels
     poison_tuples = []
-    target_img = un_normalize_cifar(target_img) if args.normalize else target_img
+    target_img = un_normalize_data(target_img) if args.normalize else target_img
     beta = 4.0 if args.normalize else 0.1
 
     base_tuples = list(zip(base_imgs, base_labels))
     for base_img, label in base_tuples:
         # unnormalize the images for optimization
-        b_unnormalized = un_normalize_cifar(base_img) if args.normalize else base_img
+        b_unnormalized = un_normalize_data(base_img) if args.normalize else base_img
         objective_vals = [10e8]
         step_size = args.step_size
 
@@ -128,7 +132,7 @@ def main(args):
             x.requires_grad_()
             if args.normalize:
                 mini_batch = torch.stack(
-                    [normalize_cifar(x), normalize_cifar(target_img)]
+                    [normalize_data(x), normalize_data(target_img)]
                 ).to(device)
             else:
                 mini_batch = torch.stack([x, target_img]).to(device)

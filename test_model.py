@@ -43,7 +43,7 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_train = get_transform(args.normalize, args.train_augment)
         transform_test = get_transform(args.normalize, False)
         trainset = torchvision.datasets.CIFAR10(
@@ -54,7 +54,7 @@ def main(args):
             root="./data", train=False, download=True, transform=transform_test
         )
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
-    elif args.dataset == "CIFAR100":
+    elif args.dataset.lower() == "cifar100":
         transform_train = get_transform(args.normalize, args.train_augment)
         transform_test = get_transform(args.normalize, False)
         trainset = torchvision.datasets.CIFAR100(
@@ -65,6 +65,13 @@ def main(args):
             root="./data", train=False, download=True, transform=transform_test
         )
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
+    elif args.dataset.lower() == "tinyimagenet":
+        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_test = get_transform(args.normalize, args.test_augment, dataset=args.dataset)
+        trainset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/train", transform_train)
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
+        testset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/test", transform_test)
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
     else:
         print("Dataset not yet implemented. Exiting from test_model.py.")
         sys.exit()

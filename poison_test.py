@@ -71,7 +71,26 @@ def main(args):
             root="./data", train=False, download=True, transform=transform_test
         )
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
-
+        dataset = torchvision.datasets.CIFAR10(
+            root="./data", train=True, download=True, transform=transforms.ToTensor()
+        )
+        num_classes = 10
+    elif args.dataset == "tinyimagenet":
+        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        cleanset = torchvision.datasets.ImageFolder(
+            "./data/tiny-imagenet-200/train", transform_train
+        )
+        testset = torchvision.datasets.ImageFolder(
+            "./data/tiny-imagenet-200/test", transform_test
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+        dataset = torchvision.datasets.ImageFolder(
+            "./data/tiny-imagenet-200/train", transforms.ToTensor()
+        )
+        num_classes = 200
     else:
         print("Dataset not yet implemented. Exiting from poison_test.py.")
         sys.exit()
@@ -115,9 +134,7 @@ def main(args):
 
     with open(os.path.join(args.poisons_path, "base_indices.pickle"), "rb") as handle:
         base_indices = np.array(pickle.load(handle))
-    dataset = torchvision.datasets.CIFAR10(
-        root="./data", train=True, download=True, transform=transforms.ToTensor()
-    )
+
     poison_perturbation_norms = compute_perturbation_norms(
         poison_tuples, dataset, base_indices
     )
@@ -143,9 +160,9 @@ def main(args):
         for param in net.parameters():
             param.requires_grad = False
 
-    # reinitialize the linear layer (two methods here depending on how the models were saved)
+    # reinitialize the linear layer
     num_ftrs = net.linear.in_features
-    net.linear = nn.Linear(num_ftrs, 10)  # requires grad by default
+    net.linear = nn.Linear(num_ftrs, num_classes)  # requires grad by default
 
     # set optimizer
     if args.optimizer.upper() == "SGD":
