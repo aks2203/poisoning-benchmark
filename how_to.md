@@ -10,7 +10,8 @@ We provide a ResNet18 pretrained on CIFAR100 on which the white-box tests will b
 ### Problem set up for training from scratch:
 - 500 poisons, with entire CIFAR10 standard training set
 - Perturbations bound in the l-infinity sense with epsilon = 8/255
-We train ResNet18, VGG11, and MobileNetV2 models for this test (i.e. no white-box grey-box black-box version).
+
+We train ResNet18, VGG11, and MobileNetV2 models for this test (i.e. no white-box / grey-box / black-box version).
 - poison_setups_transfer_learning.pickle and poison_setups_from_scratch.pickle each contain a list of dictionaries. Each dictionary has four entries:
 
     (i) The value corresponding to the key "target class" is an integer denoting the label of the target image in the dataset.
