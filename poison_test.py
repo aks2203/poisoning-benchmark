@@ -61,7 +61,7 @@ def main(args):
         poison_indices = pickle.load(handle)
 
     # get datasets from torchvision
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_train = get_transform(args.normalize, args.train_augment)
         transform_test = get_transform(args.normalize, False)
         cleanset = torchvision.datasets.CIFAR10(
@@ -75,7 +75,8 @@ def main(args):
             root="./data", train=True, download=True, transform=transforms.ToTensor()
         )
         num_classes = 10
-    elif args.dataset == "tinyimagenet":
+    elif args.dataset.lower() == "tinyimagenet":
+        print("tinyimagenet")
         transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         cleanset = torchvision.datasets.ImageFolder(
@@ -132,11 +133,8 @@ def main(args):
 
         target_img = transform_test(target_img_pil)
 
-    with open(os.path.join(args.poisons_path, "base_indices.pickle"), "rb") as handle:
-        base_indices = np.array(pickle.load(handle))
-
     poison_perturbation_norms = compute_perturbation_norms(
-        poison_tuples, dataset, base_indices
+        poison_tuples, dataset, poison_indices
     )
 
     # the limit is '8/255' but we assert that it is smaller than 9/255 to account for PIL truncation.

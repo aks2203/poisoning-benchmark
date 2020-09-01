@@ -329,9 +329,9 @@ def get_model(model, dataset="CIFAR10"):
 
     elif dataset == "tinyimagenet":
         if model == "resnet34":
-            net = resnet34(num_classes=200)
+            net = resnet34(num_classes=200, conv1_size=7)
         elif model == "resnet50":
-            net = resnet50(num_classes=200)
+            net = resnet50(num_classes=200, conv1_size=7)
         elif model == "vgg16":
             net = vgg16(num_classes=200)
         elif model == "mobilenet_v2":
@@ -382,8 +382,8 @@ def normalize_data(x, dataset="cifar10"):
         Normalised tensor
     """
     dataset = dataset.lower()
-    cifar_mean, cifar_std = data_mean_std_dict[dataset]
-    transform = transforms.Compose([transforms.Normalize(cifar_mean, cifar_std)])
+    mean, std = data_mean_std_dict[dataset]
+    transform = transforms.Compose([transforms.Normalize(mean, std)])
     return transform(x)
 
 
