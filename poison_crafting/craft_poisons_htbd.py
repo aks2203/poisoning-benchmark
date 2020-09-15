@@ -89,7 +89,7 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_test = get_transform(False, False)
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
@@ -97,10 +97,12 @@ def main(args):
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
         )
-    elif args.dataset == "tinyimagenet":
+        num_per_class = 5000
+    elif args.dataset.lower() == "tinyimagenet":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/train", transform_test)
         testset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/test", transform_test)
+        num_per_class = 500
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_htbd.py.")
         sys.exit()
@@ -133,7 +135,7 @@ def main(args):
     # Get target images
     trainset_targets = np.array(trainset.targets)
     tar_idx = np.where(trainset_targets == target_class)[0]
-    indexes = np.arange(0, 5000)
+    indexes = np.arange(0, num_per_class)
     indexes = np.random.choice(indexes, len(base_indices), replace=False)
     target_img_idx = np.array(tar_idx[indexes]).astype(int)
 
@@ -197,7 +199,7 @@ def main(args):
             losses.update(loss.item(), input_target_imgs.size(0))
             loss.backward()
 
-            input_bases = input_bases - lr1 * lr1.grad
+            input_bases = input_bases - lr1 * input_bases.grad
             pert = input_bases - base_imgs[i : i + remaining]
             pert = torch.clamp(pert, -args.epsilon, args.epsilon).detach_()
             input_bases = pert + base_imgs[i : i + remaining]

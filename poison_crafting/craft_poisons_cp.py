@@ -141,11 +141,6 @@ def main(args):
         end2end=args.end2end,
     )
 
-    torch.save(
-        {"poison": poison_tuple_list, "idx": base_indices, "recon-loss": recon_loss},
-        os.path.join(chk_path, "poison.pth"),
-    )
-
     # move poisons to PIL format
     if args.normalize:
         target = un_normalize_data(target.squeeze(0), args.dataset)

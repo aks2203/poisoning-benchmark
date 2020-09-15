@@ -108,7 +108,8 @@ def main(args):
         target_img_tuple = pickle.load(handle)
         target_class = target_img_tuple[1]
         if len(target_img_tuple) == 4:
-            patch = torch.tensor(target_img_tuple[2])
+            patch = target_img_tuple[2] if torch.is_tensor(target_img_tuple[2]) else \
+                torch.tensor(target_img_tuple[2])
             if patch.shape[0] != 3 or patch.shape[1] != 5 or patch.shape[2] != 5:
                 print(
                     "Expected shape of the patch is [3, 5, 5] but is {}. Exiting from poison_test.py.".format(
