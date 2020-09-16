@@ -206,6 +206,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--epochs", default=200, type=int, help="number of epochs for training"
     )
+    parser.add_argument(
+        "--batch_size", default=128, type=int, help="batch size for training and testing"
+    )
     parser.add_argument("--optimizer", default="SGD", type=str, help="optimizer")
     parser.add_argument(
         "--model", default="ResNet18", type=str, help="model for training"
