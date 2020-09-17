@@ -30,6 +30,7 @@ from learning_module import (
     PoisonedDataset,
     compute_perturbation_norms,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):
@@ -76,21 +77,15 @@ def main(args):
         )
         num_classes = 10
     elif args.dataset.lower() == "tinyimagenet":
-        print("tinyimagenet")
         transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        cleanset = torchvision.datasets.ImageFolder(
-            "./data/tiny-imagenet-200/train", transform_train
-        )
-        testset = torchvision.datasets.ImageFolder(
-            "./data/tiny-imagenet-200/test", transform_test
-        )
-        testloader = torch.utils.data.DataLoader(
-            testset, batch_size=64, num_workers=1, shuffle=False
-        )
-        dataset = torchvision.datasets.ImageFolder(
-            "./data/tiny-imagenet-200/train", transforms.ToTensor()
-        )
+        cleanset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_train, classes=args.tinyimagenet_classes)
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes=args.tinyimagenet_classes)
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                               transform=transforms.ToTensor(), classes=args.tinyimagenet_classes)
         num_classes = 200
     else:
         print("Dataset not yet implemented. Exiting from poison_test.py.")
@@ -213,12 +208,9 @@ def main(args):
     p_acc = net(target_img.unsqueeze(0).to(device)).max(1)[1].item() == poisoned_label
 
     print(
-        now(),
-        " poison success: ",
-        p_acc,
-        " poisoned_label: ",
-        poisoned_label,
-        " prediction: ",
+        now()," poison success: ",
+        p_acc," poisoned_label: ",
+        poisoned_label," prediction: ",
         net(target_img.unsqueeze(0).to(device)).max(1)[1].item(),
     )
 
@@ -248,59 +240,34 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="PyTorch poison benchmarking")
     parser.add_argument("--lr", default=0.1, type=float, help="learning rate")
-    parser.add_argument(
-        "--lr_schedule", nargs="+", default=[30], type=int, help="where to decrease lr"
-    )
-    parser.add_argument(
-        "--lr_factor", default=0.1, type=float, help="factor by which to decrease lr"
-    )
-    parser.add_argument(
-        "--epochs", default=40, type=int, help="number of epochs for training"
-    )
-    parser.add_argument(
-        "--model", default="ResNet18", type=str, help="model for training"
-    )
+    parser.add_argument("--lr_schedule", nargs="+", default=[30], type=int,
+                        help="where to decrease lr")
+    parser.add_argument("--lr_factor", default=0.1, type=float,
+                        help="factor by which to decrease lr")
+    parser.add_argument("--epochs", default=40, type=int, help="number of epochs for training")
+    parser.add_argument("--model", default="ResNet18", type=str, help="model for training")
     parser.add_argument("--dataset", default="CIFAR10", type=str, help="dataset")
-    parser.add_argument(
-        "--pretrain_dataset",
-        default="CIFAR100",
-        type=str,
-        help="dataset for pretrained network",
-    )
+    parser.add_argument("--pretrain_dataset", default="CIFAR100", type=str,
+                        help="dataset for pretrained network")
     parser.add_argument("--optimizer", default="SGD", type=str, help="optimizer")
-    parser.add_argument(
-        "--val_period", default=20, type=int, help="print every __ epoch"
-    )
-    parser.add_argument(
-        "--output", default="output_default", type=str, help="output subdirectory"
-    )
-    parser.add_argument(
-        "--poisons_path",
-        default="poison_examples",
-        type=str,
-        help="where are the poisons?",
-    )
-    parser.add_argument(
-        "--model_path", default=None, type=str, help="where is the model saved?"
-    )
-    parser.add_argument(
-        "--end2end", action="store_true", help="End to end retrain with poisons?"
-    )
+    parser.add_argument("--val_period", default=20, type=int, help="print every __ epoch")
+    parser.add_argument("--output", default="output_default", type=str, help="output subdirectory")
+    parser.add_argument("--poisons_path", default="poison_examples", type=str,
+                        help="where are the poisons?")
+    parser.add_argument("--model_path", default=None, type=str, help="where is the model saved?")
+    parser.add_argument("--end2end", action="store_true", help="End to end retrain with poisons?")
     parser.add_argument("--normalize", dest="normalize", action="store_true")
     parser.add_argument("--no-normalize", dest="normalize", action="store_false")
     parser.set_defaults(normalize=True)
     parser.add_argument("--train_augment", dest="train_augment", action="store_true")
-    parser.add_argument(
-        "--no-train_augment", dest="train_augment", action="store_false"
-    )
+    parser.add_argument("--no-train_augment", dest="train_augment", action="store_false")
     parser.set_defaults(train_augment=False)
-    parser.add_argument(
-        "--weight_decay", default=0.0002, type=float, help="weight decay coefficient"
-    )
-    parser.add_argument(
-        "--batch_size", default=128, type=int, help="training batch size"
-    )
+    parser.add_argument("--weight_decay", default=0.0002, type=float,
+                        help="weight decay coefficient")
+    parser.add_argument("--batch_size", default=128, type=int, help="training batch size")
     parser.add_argument("--trainset_size", default=None, type=int, help="Trainset size")
+    parser.add_argument("--tinyimagenet_classes", default="all", type=str,
+                        help="which tiny-imagenet classes?")
 
     args = parser.parse_args()
 

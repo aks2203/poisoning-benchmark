@@ -7,6 +7,7 @@ import glob
 import os
 
 import torch
+import numpy as np
 from PIL import Image
 
 
@@ -32,7 +33,7 @@ class TinyImageNet(torch.utils.data.Dataset):
     VAL_ANNOTATION_FILE = 'val_annotations.txt'
     CLASSES = 'words.txt'
 
-    def __init__(self, root, split='train', transform=None):
+    def __init__(self, root, split='train', transform=None, classes="all"):
         """Init with split, transform, target_transform. use --cached_dataset data is to be kept in memory."""
         self.root = os.path.expanduser(root)
         self.split = split
@@ -64,6 +65,17 @@ class TinyImageNet(torch.utils.data.Dataset):
                 label_text_to_word[label_text] = word.split(',')[0].rstrip('\n')
         self.classes = [label_text_to_word[label] for label in self.label_texts]
         self.targets = [self.labels[os.path.basename(file_path)] for file_path in self.image_paths]
+        if classes =="firsthalf":
+            idx = np.where(np.array(self.targets) < 100)[0]
+        elif classes == "lasthalf":
+            idx = np.where(np.array(self.targets) >= 100)[0]
+        else:
+            idx = np.arange(len(self.targets))
+        self.image_paths = [self.image_paths[i] for i in idx]
+        self.targets = [self.targets[i] for i in idx]
+        self.targets = [t - min(self.targets) for t in self.targets]
+        print(f"Len of image_paths = {len(self.image_paths)}, len of targets = {len(self.targets)}")
+        print(f"len of idx = {len(idx)}")
 
     def __len__(self):
         """Return length via image paths."""

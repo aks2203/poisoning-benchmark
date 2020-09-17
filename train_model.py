@@ -39,6 +39,8 @@ def main(args):
         void
     """
 
+    print(args)
+
     print(now(), "train_model.py main() running.")
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -88,13 +90,16 @@ def main(args):
     elif args.dataset.lower() == "tinyimagenet":
         transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train", transform=transform_train)
+        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_train, classes=args.tinyimagenet_classes)
         trainset = PoisonedDataset(
             trainset, (), args.trainset_size, transform=transform_train
         )
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val", transform=transform_test)
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes=args.tinyimagenet_classes)
         testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        print("tiny")
 
     else:
         print("Dataset not yet implemented. Ending run from train_model.py.")
@@ -134,7 +139,7 @@ def main(args):
         adjust_learning_rate(optimizer, epoch, args.lr_schedule, args.lr_factor)
         loss, acc = train(net, trainloader, optimizer, criterion, device)
         all_losses.append(loss)
-
+        print(epoch)
         if (epoch + 1) % args.val_period == 0:
             natural_acc = test(net, testloader, device)
             print(
@@ -253,6 +258,8 @@ if __name__ == "__main__":
         "--no-train_augment", dest="train_augment", action="store_false"
     )
     parser.set_defaults(train_augment=False)
+    parser.add_argument("--tinyimagenet_classes", default="all", type=str,
+                        help="which tiny-imagenet classes?")
     args = parser.parse_args()
 
     main(args)
