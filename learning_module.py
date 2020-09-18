@@ -20,7 +20,9 @@ import numpy as np
 data_mean_std_dict = {
     "cifar10": ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     "cifar100": ((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
-    "tinyimagenet": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262))
+    "tinyimagenet_all": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262)),
+    "tinyimagenet_first": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262)),
+    "tinyimagenet_last": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262))
 }
 
 
@@ -259,6 +261,8 @@ def get_transform(normalize, augment, dataset="CIFAR10"):
 
     dataset = dataset.lower()
     mean, std = data_mean_std_dict[dataset]
+    if "tinyimagenet" in dataset:
+        dataset = "tinyimagenet"
     cropsize = {"cifar10": 32, "cifar100": 32, "tinyimagenet": 64}[dataset]
     padding = 4
 
@@ -327,15 +331,27 @@ def get_model(model, dataset="CIFAR10"):
             )
             sys.exit()
 
-    elif dataset == "tinyimagenet":
+    elif dataset == "tinyimagenet_all":
         if model == "resnet34":
             net = resnet34(num_classes=200, conv1_size=7)
-        elif model == "resnet50":
-            net = resnet50(num_classes=200, conv1_size=7)
         elif model == "vgg16":
             net = vgg16(num_classes=200)
         elif model == "mobilenet_v2":
             net = MobileNetV2(num_classes=200)
+    elif dataset == "tinyimagenet_first":
+        if model == "resnet34":
+            net = resnet34(num_classes=100, conv1_size=7)
+        elif model == "vgg16":
+            net = vgg16(num_classes=100)
+        elif model == "mobilenet_v2":
+            net = MobileNetV2(num_classes=100)
+    elif dataset == "tinyimagenet_last":
+        if model == "resnet34":
+            net = resnet34(num_classes=100, conv1_size=7)
+        elif model == "vgg16":
+            net = vgg16(num_classes=100)
+        elif model == "mobilenet_v2":
+            net = MobileNetV2(num_classes=100)
     else:
         print("Dataset not yet implemented. Exiting from learning_module.get_model().")
         sys.exit()

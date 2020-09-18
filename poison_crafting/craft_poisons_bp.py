@@ -29,6 +29,7 @@ from learning_module import (
     load_model_from_checkpoint,
 )
 from models import *
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):
@@ -53,10 +54,24 @@ def main(args):
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
         )
-    elif args.dataset.lower() == "tinyimagenet":
+    elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/train", transform_test)
-        testset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/test", transform_test)
+        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_test, classes="firsthalf")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="firsthalf")
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_test, classes="lasthalf")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="lasthalf")
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_test, classes="all")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="all")
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_cp.py.")
         sys.exit()

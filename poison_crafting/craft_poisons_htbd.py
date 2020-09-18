@@ -13,6 +13,8 @@ import os
 import pickle
 import sys
 
+from tinyimagenet_module import TinyImageNet
+
 sys.path.append(os.path.realpath("."))
 
 import numpy as np
@@ -98,10 +100,26 @@ def main(args):
             root="./data", train=True, download=True, transform=transform_test
         )
         num_per_class = 5000
-    elif args.dataset.lower() == "tinyimagenet":
+    elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/train", transform_test)
-        testset = torchvision.datasets.ImageFolder("./data/tiny-imagenet-200/test", transform_test)
+        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_test, classes="firsthalf")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="firsthalf")
+        num_per_class = 500
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_test, classes="lasthalf")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="lasthalf")
+        num_per_class = 500
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_test, classes="all")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="all")
         num_per_class = 500
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_htbd.py.")

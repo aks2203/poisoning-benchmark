@@ -76,17 +76,42 @@ def main(args):
             root="./data", train=True, download=True, transform=transforms.ToTensor()
         )
         num_classes = 10
-    elif args.dataset.lower() == "tinyimagenet":
+    elif args.dataset.lower() == "tinyimagenet_first":
         transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         cleanset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes=args.tinyimagenet_classes)
+                                transform=transform_train, classes="firsthalf")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes=args.tinyimagenet_classes)
+                               transform=transform_test, classes="firsthalf")
         testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
         dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                               transform=transforms.ToTensor(), classes=args.tinyimagenet_classes)
+                               transform=transforms.ToTensor(), classes="firsthalf")
+        num_classes = 100
+
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        cleanset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_train, classes="lasthalf")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="lasthalf")
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                               transform=transforms.ToTensor(), classes="lasthalf")
+        num_classes = 100
+
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        cleanset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                                transform=transform_train, classes="all")
+        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
+                               transform=transform_test, classes="all")
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
+                               transform=transforms.ToTensor(), classes="all")
         num_classes = 200
+
     else:
         print("Dataset not yet implemented. Exiting from poison_test.py.")
         sys.exit()

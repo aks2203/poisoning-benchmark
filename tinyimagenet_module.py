@@ -74,8 +74,6 @@ class TinyImageNet(torch.utils.data.Dataset):
         self.image_paths = [self.image_paths[i] for i in idx]
         self.targets = [self.targets[i] for i in idx]
         self.targets = [t - min(self.targets) for t in self.targets]
-        print(f"Len of image_paths = {len(self.image_paths)}, len of targets = {len(self.targets)}")
-        print(f"len of idx = {len(idx)}")
 
     def __len__(self):
         """Return length via image paths."""
