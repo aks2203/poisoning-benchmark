@@ -12,8 +12,6 @@ import os
 import pickle
 import sys
 
-from tinyimagenet_module import TinyImageNet
-
 sys.path.append(os.path.realpath("."))
 
 import numpy as np
@@ -31,6 +29,7 @@ from learning_module import (
     NormalizeByChannelMeanStd,
     data_mean_std_dict,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 class AttackPGD(nn.Module):

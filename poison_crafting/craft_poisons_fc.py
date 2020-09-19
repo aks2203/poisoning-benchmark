@@ -15,8 +15,6 @@ import os
 import pickle
 import sys
 
-from tinyimagenet_module import TinyImageNet
-
 sys.path.append(os.path.realpath("."))
 
 import torch
@@ -31,6 +29,7 @@ from learning_module import (
     un_normalize_data,
     load_model_from_checkpoint,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):

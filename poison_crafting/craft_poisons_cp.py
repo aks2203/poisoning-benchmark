@@ -14,8 +14,6 @@ import os
 import pickle
 import sys
 
-from tinyimagenet_module import TinyImageNet
-
 sys.path.append(os.path.realpath("."))
 
 import torch.backends.cudnn as cudnn
@@ -32,6 +30,7 @@ from learning_module import (
     load_model_from_checkpoint,
 )
 from models import *
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):
