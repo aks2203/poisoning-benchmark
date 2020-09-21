@@ -88,4 +88,4 @@ class TinyImageNet(torch.utils.data.Dataset):
         if self.split == 'test':
             return img
         else:
-            return img, self.labels[os.path.basename(file_path)]
+            return img, self.targets[index]
