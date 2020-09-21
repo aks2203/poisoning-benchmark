@@ -12,11 +12,11 @@ import os
 import poison_test
 from learning_module import now
 
-whitebox_modelpath = "/nfshomes/avi1/scratch/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/vgg16_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
-greybox_modelpath = "/nfshomes/avi1/scratch/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/vgg16_seed_1001_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
+whitebox_modelpath = "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/vgg16_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
+greybox_modelpath = "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/vgg16_seed_1001_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
 blackbox_modelpath = [
-    "/nfshomes/avi1/scratch/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/resnet34_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
-    "/nfshomes/avi1/scratch/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/mobilenet_v2_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
+    "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/resnet34_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
+    "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/mobilenet_v2_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
 ]
 
 
