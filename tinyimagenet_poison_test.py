@@ -15,7 +15,7 @@ from learning_module import now
 whitebox_modelpath = "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/vgg16_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
 greybox_modelpath = "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/vgg16_seed_1001_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
 blackbox_modelpath = [
-    "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/resnet34_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
+    "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/resnet34_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth",
     "/cmlscratch/avi1/poisoning-benchmark/tinyimagenet_firsthalf_checkpoints/mobilenet_v2_seed_1000_normalize=True_augment=True_optimizer=SGD_epoch=199.pth"
 ]
 
@@ -71,7 +71,7 @@ def main(args):
         poison_test.main(args)
 
         args.model_path = blackbox_modelpath[1]
-        args.model = "MobileNetV2"
+        args.model = "mobilenet_v2"
         poison_test.main(args)
         ####################################################
 
