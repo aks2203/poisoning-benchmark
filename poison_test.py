@@ -130,24 +130,25 @@ def main(args):
         if len(target_img_tuple) == 4:
             patch = target_img_tuple[2] if torch.is_tensor(target_img_tuple[2]) else \
                 torch.tensor(target_img_tuple[2])
-            if patch.shape[0] != 3 or patch.shape[1] != 5 or patch.shape[2] != 5:
+            if patch.shape[0] != 3 or patch.shape[1] != 8 or patch.shape[2] != 8:
                 print(
                     "Expected shape of the patch is [3, 5, 5] but is {}. Exiting from poison_test.py.".format(
                         patch.shape
                     )
                 )
                 sys.exit()
+            patch_size = patch.shape[1]
             startx, starty = target_img_tuple[3]
             target_img_pil = target_img_tuple[0]
             h, w = target_img_pil.size
-            if starty + 5 > h or startx + 5 > w:
+            if starty + patch_size > h or startx + patch_size > w:
                 print(
                     "Invalid startx or starty point for the patch. Exiting from poison_test.py."
                 )
                 sys.exit()
 
             target_img_tensor = transforms.ToTensor()(target_img_pil)
-            target_img_tensor[:, starty : starty + 5, startx : startx + 5] = patch
+            target_img_tensor[:, starty : starty + patch_size, startx : startx + patch_size] = patch
             target_img_pil = transforms.ToPILImage()(target_img_tensor)
         else:
             target_img_pil = target_img_tuple[0]

@@ -79,13 +79,17 @@ def main(args):
     mean, std = data_mean_std_dict[args.dataset]
     mean = list(mean)
     std = list(std)
+    inv_mean = [-mean[i] / std[i] for i in range(len(mean))]
+    inv_std = [1.0 / std[i] for i in range(len(std))]
     normalization_net = NormalizeByChannelMeanStd(mean, std)
+    un_normalization_net = NormalizeByChannelMeanStd(inv_mean, inv_std)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     net = load_model_from_checkpoint(
         args.model[0], args.model_path[0], args.pretrain_dataset
     )
     net.eval()
     normalization_net = normalization_net.to(device)
+    un_normalization_net = un_normalization_net.to(device)
     net = net.to(device)
 
     ####################################################
@@ -100,21 +104,21 @@ def main(args):
         )
         num_per_class = 5000
     elif args.dataset.lower() == "tinyimagenet_first":
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        transform_test = get_transform(False, False, dataset=args.dataset)
         trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                 transform=transform_test, classes="firsthalf")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
                                transform=transform_test, classes="firsthalf")
         num_per_class = 500
     elif args.dataset.lower() == "tinyimagenet_last":
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        transform_test = get_transform(False, False, dataset=args.dataset)
         trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                 transform=transform_test, classes="lasthalf")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
                                transform=transform_test, classes="lasthalf")
         num_per_class = 500
     elif args.dataset.lower() == "tinyimagenet_all":
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        transform_test = get_transform(False, False, dataset=args.dataset)
         trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                 transform=transform_test, classes="all")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
@@ -151,7 +155,10 @@ def main(args):
 
     # Get target images
     trainset_targets = np.array(trainset.targets)
+    # print(trainset_targets.shape, np.max(trainset_targets), target_class)
+    target_class = target_class
     tar_idx = np.where(trainset_targets == target_class)[0]
+    # print(tar_idx.shape)
     indexes = np.arange(0, num_per_class)
     indexes = np.random.choice(indexes, len(base_indices), replace=False)
     target_img_idx = np.array(tar_idx[indexes]).astype(int)
@@ -217,13 +224,20 @@ def main(args):
             loss.backward()
 
             input_bases = input_bases - lr1 * input_bases.grad
-            pert = input_bases - base_imgs[i : i + remaining]
+            pert = input_bases - base_imgs[i: i + remaining]
             pert = torch.clamp(pert, -args.epsilon, args.epsilon).detach_()
-            input_bases = pert + base_imgs[i : i + remaining]
+            input_bases = pert + base_imgs[i: i + remaining]
+            residual = input_bases - base_imgs[i: i + remaining]
             input_bases = input_bases.clamp(0, 1)
+            residual = input_bases - base_imgs[i: i + remaining]
 
             if j % 100 == 0:
                 logging.info(
+                    "Epoch: {:2d} | i: {} | iter: {:5d} | LR: {:2.5f} | Loss Val: {:5.3f} | Loss Avg: {:5.3f}".format(
+                        0, i, j, lr1, losses.val, losses.avg
+                    )
+                )
+                print(
                     "Epoch: {:2d} | i: {} | iter: {:5d} | LR: {:2.5f} | Loss Val: {:5.3f} | Loss Avg: {:5.3f}".format(
                         0, i, j, lr1, losses.val, losses.avg
                     )
@@ -283,7 +297,7 @@ if __name__ == "__main__":
         "--model", type=str, default=["resnet18"], nargs="+", help="model name"
     )
     parser.add_argument("--image_size", type=int, default=32, help="Image Size")
-    parser.add_argument("--patch_size", type=int, default=5, help="Size of the patch")
+    parser.add_argument("--patch_size", type=int, default=8, help="Size of the patch")
     parser.add_argument(
         "--trigger_path",
         type=str,
