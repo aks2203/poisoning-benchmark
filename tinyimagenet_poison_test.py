@@ -133,7 +133,7 @@ def main(args):
         args.model = "vgg16"
         poison_test.main(args)
 
-        args.model = "MobileNetV2"
+        args.model = "mobilenet_v2"
         poison_test.main(args)
 
         args.model = "resnet34"

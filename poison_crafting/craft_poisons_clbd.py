@@ -99,19 +99,19 @@ def main(args):
             root="./data", train=True, download=True, transform=transform_test
         )
     elif args.dataset.lower() == "tinyimagenet_first":
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        transform_test = get_transform(False, False, dataset=args.dataset)
         trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                 transform=transform_test, classes="firsthalf")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
                                transform=transform_test, classes="firsthalf")
     elif args.dataset.lower() == "tinyimagenet_last":
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        transform_test = get_transform(False, False, dataset=args.dataset)
         trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                 transform=transform_test, classes="lasthalf")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
                                transform=transform_test, classes="lasthalf")
     elif args.dataset.lower() == "tinyimagenet_all":
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        transform_test = get_transform(False, False, dataset=args.dataset)
         trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                 transform=transform_test, classes="all")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
@@ -151,7 +151,7 @@ def main(args):
     trans_trigger = transforms.Compose(
         [transforms.Resize((args.patch_size, args.patch_size)), transforms.ToTensor()]
     )
-    trigger = Image.open("./poison_crafting/triggers/clbd.png").convert("RGB")
+    trigger = Image.open("./poison_crafting/triggers/clbd_8.png").convert("RGB")
     trigger = trans_trigger(trigger).unsqueeze(0).to(device)
 
     # craft poisons
@@ -262,7 +262,7 @@ if __name__ == "__main__":
         "--pretrain_dataset", default="CIFAR10", type=str, help="dataset"
     )
     parser.add_argument("--image_size", type=int, default=32, help="Image Size")
-    parser.add_argument("--patch_size", type=int, default=5, help="Size of the patch")
+    parser.add_argument("--patch_size", type=int, default=8, help="Size of the patch")
     parser.add_argument("--num_steps", type=int, default=20, help="Number of PGD steps")
     parser.add_argument(
         "--step_size", type=int, default=2 / 255, help="Step size for perturbation"
