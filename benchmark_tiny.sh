@@ -11,7 +11,7 @@
 
 if (( $# == 2 )); then
   for filepath in $1*/; do
-   echo "python tinyimagenet_poison_test.py --poisons_path ${filepath} --$2 --output benchmark_100_trials_tiny" >> backdoor_test_from_scratch_batches.sh
+   echo "python tinyimagenet_poison_test.py --poisons_path ${filepath} --$2 --output benchmark_100_trials_tiny" >> launch/clbd_fst_benchmark.sh
   done
 elif (( $# == 1 )); then
   for filepath in $1*/; do

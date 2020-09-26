@@ -37,15 +37,16 @@ def scaling_results(results_path, attackname):
 if __name__ == "__main__":
     print("\n Generating results... \n")
     parser = argparse.ArgumentParser(description="PyTorch poison benchmarking")
-    parser.add_argument("filepath", type=str)
+    parser.add_argument("--filepath", type=str)
     parser.add_argument("--attack_name", type=str, default="fc", help="Which attack?")
     parser.add_argument("--dataset", type=str, default="cifar10", help="Which dataset?")
     args = parser.parse_args()
 
     models = {"cifar10": ["resnet18", "vgg11", "mobilenetv2"],
               "tinyimagenet": ["vgg16", "resnet34", "mobilenet_v2"]}[args.dataset]
+    print(args.filepath)
     df = pd.read_csv(args.filepath, header=0)
-    df = df[df['poisons path'].str.contains(args.attack_name)].tail(100)
+    df = df[df['poisons path'].str.contains(args.attack_name)].tail(400)
 
     # print(f"File path: {str(args.filepath)}")
     print(f"  Attack: {args.attack_name}, dataset: {args.dataset}")
