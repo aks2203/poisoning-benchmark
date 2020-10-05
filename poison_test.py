@@ -20,7 +20,7 @@ import torch.utils.data as data
 import torchvision
 from torchvision import transforms as transforms
 
-from learning_module import now, get_model, load_model_from_checkpoint, get_transform
+from learning_module import now, get_model, load_model_from_checkpoint, get_dataset
 from learning_module import (
     train,
     test,
@@ -30,8 +30,6 @@ from learning_module import (
     PoisonedDataset,
     compute_perturbation_norms,
 )
-from tinyimagenet_module import TinyImageNet
-
 
 def main(args):
     """Main function to check the success rate of the given poisons
@@ -50,9 +48,6 @@ def main(args):
     # Set device
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    ####################################################
-    #               Dataset
-
     # load the poisons and their indices within the training set from pickled files
     with open(os.path.join(args.poisons_path, "poisons.pickle"), "rb") as handle:
         poison_tuples = pickle.load(handle)
@@ -61,67 +56,9 @@ def main(args):
     with open(os.path.join(args.poisons_path, "base_indices.pickle"), "rb") as handle:
         poison_indices = pickle.load(handle)
 
-    # get datasets from torchvision
-    if args.dataset.lower() == "cifar10":
-        transform_train = get_transform(args.normalize, args.train_augment)
-        transform_test = get_transform(args.normalize, False)
-        cleanset = torchvision.datasets.CIFAR10(
-            root="./data", train=True, download=True, transform=transform_train
-        )
-        testset = torchvision.datasets.CIFAR10(
-            root="./data", train=False, download=True, transform=transform_test
-        )
-        testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
-        dataset = torchvision.datasets.CIFAR10(
-            root="./data", train=True, download=True, transform=transforms.ToTensor()
-        )
-        num_classes = 10
-    elif args.dataset.lower() == "tinyimagenet_first":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        cleanset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="firsthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
-        dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                               transform=transforms.ToTensor(), classes="firsthalf")
-        num_classes = 100
-
-    elif args.dataset.lower() == "tinyimagenet_last":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        cleanset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="lasthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
-        dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                               transform=transforms.ToTensor(), classes="lasthalf")
-        num_classes = 100
-
-    elif args.dataset.lower() == "tinyimagenet_all":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
-        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        cleanset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="all")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
-        dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                               transform=transforms.ToTensor(), classes="all")
-        num_classes = 200
-
-    else:
-        print("Dataset not yet implemented. Exiting from poison_test.py.")
-        sys.exit()
-
-    trainset = PoisonedDataset(
-        cleanset, poison_tuples, args.trainset_size, transform_train, poison_indices
-    )
-    trainloader = torch.utils.data.DataLoader(
-        trainset, batch_size=args.batch_size, shuffle=True
-    )
+    # get the dataset and the dataloaders
+    trainloader, testloader, dataset, transform_train, transform_test, num_classes = \
+        get_dataset(args, poison_tuples, poison_indices)
 
     # get the target image from pickled file
     with open(os.path.join(args.poisons_path, "target.pickle"), "rb") as handle:
@@ -130,26 +67,28 @@ def main(args):
         if len(target_img_tuple) == 4:
             patch = target_img_tuple[2] if torch.is_tensor(target_img_tuple[2]) else \
                 torch.tensor(target_img_tuple[2])
-            if patch.shape[0] != 3 or patch.shape[1] != 8 or patch.shape[2] != 8:
+            if patch.shape[0] != 3 or patch.shape[1] != args.patch_size or patch.shape[2] != args.patch_size:
                 print(
-                    "Expected shape of the patch is [3, 5, 5] but is {}. Exiting from poison_test.py.".format(
-                        patch.shape
-                    )
+                    "Expected shape of the patch is [3, {args.patch_size, args.patch_size] "
+                    "but is {}. Exiting from poison_test.py.".format(patch.shape)
                 )
                 sys.exit()
-            patch_size = patch.shape[1]
+
             startx, starty = target_img_tuple[3]
             target_img_pil = target_img_tuple[0]
             h, w = target_img_pil.size
-            if starty + patch_size > h or startx + patch_size > w:
+
+            if starty + args.patch_size > h or startx + args.patch_size > w:
                 print(
                     "Invalid startx or starty point for the patch. Exiting from poison_test.py."
                 )
                 sys.exit()
 
             target_img_tensor = transforms.ToTensor()(target_img_pil)
-            target_img_tensor[:, starty : starty + patch_size, startx : startx + patch_size] = patch
+            target_img_tensor[:, starty : starty + args.patch_patch_size,
+                              startx : startx + args.patch_patch_size] = patch
             target_img_pil = transforms.ToPILImage()(target_img_tensor)
+
         else:
             target_img_pil = target_img_tuple[0]
 
@@ -172,11 +111,11 @@ def main(args):
             args.model, args.model_path, args.pretrain_dataset
         )
     else:
-        args.end2end = True  # we wouldn't fine tune from a random intiialization
+        args.ffe = False  # we wouldn't fine tune from a random intiialization
         net = get_model(args.model, args.dataset)
 
     # freeze weights in feature extractor if not doing end2end retraining
-    if not args.end2end:
+    if args.ffe:
         for param in net.parameters():
             param.requires_grad = False
 
@@ -213,16 +152,11 @@ def main(args):
             )
             print(
                 now(),
-                " Epoch: ",
-                epoch,
-                ", Loss: ",
-                loss,
-                ", Training acc: ",
-                acc,
-                ", Natural accuracy: ",
-                natural_acc,
-                ", poison success: ",
-                p_acc,
+                " Epoch: ", epoch,
+                ", Loss: ", loss,
+                ", Training acc: ", acc,
+                ", Natural accuracy: ", natural_acc,
+                ", poison success: ", p_acc,
             )
 
     # test
@@ -260,41 +194,3 @@ def main(args):
     ####################################################
 
     return
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description="PyTorch poison benchmarking")
-    parser.add_argument("--lr", default=0.1, type=float, help="learning rate")
-    parser.add_argument("--lr_schedule", nargs="+", default=[30], type=int,
-                        help="where to decrease lr")
-    parser.add_argument("--lr_factor", default=0.1, type=float,
-                        help="factor by which to decrease lr")
-    parser.add_argument("--epochs", default=40, type=int, help="number of epochs for training")
-    parser.add_argument("--model", default="ResNet18", type=str, help="model for training")
-    parser.add_argument("--dataset", default="CIFAR10", type=str, help="dataset")
-    parser.add_argument("--pretrain_dataset", default="CIFAR100", type=str,
-                        help="dataset for pretrained network")
-    parser.add_argument("--optimizer", default="SGD", type=str, help="optimizer")
-    parser.add_argument("--val_period", default=20, type=int, help="print every __ epoch")
-    parser.add_argument("--output", default="output_default", type=str, help="output subdirectory")
-    parser.add_argument("--poisons_path", default="poison_examples", type=str,
-                        help="where are the poisons?")
-    parser.add_argument("--model_path", default=None, type=str, help="where is the model saved?")
-    parser.add_argument("--end2end", action="store_true", help="End to end retrain with poisons?")
-    parser.add_argument("--normalize", dest="normalize", action="store_true")
-    parser.add_argument("--no-normalize", dest="normalize", action="store_false")
-    parser.set_defaults(normalize=True)
-    parser.add_argument("--train_augment", dest="train_augment", action="store_true")
-    parser.add_argument("--no-train_augment", dest="train_augment", action="store_false")
-    parser.set_defaults(train_augment=False)
-    parser.add_argument("--weight_decay", default=0.0002, type=float,
-                        help="weight decay coefficient")
-    parser.add_argument("--batch_size", default=128, type=int, help="training batch size")
-    parser.add_argument("--trainset_size", default=None, type=int, help="Trainset size")
-    parser.add_argument("--tinyimagenet_classes", default="all", type=str,
-                        help="which tiny-imagenet classes?")
-
-    args = parser.parse_args()
-
-    main(args)
