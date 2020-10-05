@@ -77,10 +77,6 @@ def main(args):
     """
     print(now(), "craft_poisons_htbd.py main() running...")
     mean, std = data_mean_std_dict[args.dataset]
-    mean = list(mean)
-    std = list(std)
-    inv_mean = [-mean[i] / std[i] for i in range(len(mean))]
-    inv_std = [1.0 / std[i] for i in range(len(std))]
     normalization_net = NormalizeByChannelMeanStd(mean, std)
     un_normalization_net = NormalizeByChannelMeanStd(inv_mean, inv_std)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -227,9 +223,7 @@ def main(args):
             pert = input_bases - base_imgs[i: i + remaining]
             pert = torch.clamp(pert, -args.epsilon, args.epsilon).detach_()
             input_bases = pert + base_imgs[i: i + remaining]
-            residual = input_bases - base_imgs[i: i + remaining]
             input_bases = input_bases.clamp(0, 1)
-            residual = input_bases - base_imgs[i: i + remaining]
 
             if j % 100 == 0:
                 logging.info(
