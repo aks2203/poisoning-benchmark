@@ -12,43 +12,26 @@ def get_error(p, n):
     return err.flatten()
 
 
-def scaling_results(results_path, attackname):
-    df = pd.read_csv(results_path, header=0)
-    df.insert(1, "Attack", attackname, True)
-    df.insert(1, "Train Set Size", 100*df['num poisons'])
-    print([df.loc[df['num poisons'] == n].shape for n in [5, 10, 25, 50, 100, 200, 500]])
-    numbers_of_poisons = sorted(list(set(df['num poisons'])))
-    nums = []
-    accs = []
-    for num in numbers_of_poisons:
-        print(num, ' poison examples: ')
-        small_df = df.loc[df['num poisons'] == num]
-        nums.append(num)
-        accs.append((sum(small_df['poison_acc'])/small_df.shape[0]))
-        # accs.append((sum(small_df['flip_acc'])/small_df.shape[0]))
-        error = get_error(accs[-1], small_df.shape[0])
-        print('success rate on  clean target: %.2f +/- %.2f' % (100*accs[-1], 100*error))
-        print(' ')
-    accs = np.array(accs)
-    print("______________________")
-    return df, accs
-
-
 if __name__ == "__main__":
     print("\n Generating results... \n")
     parser = argparse.ArgumentParser(description="PyTorch poison benchmarking")
     parser.add_argument("--filepath", type=str)
     parser.add_argument("--attack_name", type=str, default="fc", help="Which attack?")
     parser.add_argument("--dataset", type=str, default="cifar10", help="Which dataset?")
+    parser.add_argument("--trials", type=int, default=100, help="Number of trials")
     args = parser.parse_args()
 
-    models = {"cifar10": ["resnet18", "vgg11", "mobilenetv2"],
+    models = {"cifar10": ["resnet18", "VGG11", "MobileNetV2"],
               "tinyimagenet": ["vgg16", "resnet34", "mobilenet_v2"]}[args.dataset]
     print(args.filepath)
     df = pd.read_csv(args.filepath, header=0)
-    df = df[df['poisons path'].str.contains(args.attack_name)].tail(400)
+    df['model'] = df.apply(lambda x: x['model'].split('/')[-1], axis=1)
+    df['batch'] = df.apply(lambda x: x['poisons path'].split('/')[-2], axis=1)
+    df['attack'] = df.apply(lambda x: x['poisons path'].split('/')[-4], axis=1)
+    df = df[['attack', 'model', 'batch', 'poison_acc']]
+    df.drop_duplicates(subset=['batch', 'model', 'attack'], inplace=True)
+    df = df[df["attack"].str.contains(args.attack_name)]
 
-    # print(f"File path: {str(args.filepath)}")
     print(f"  Attack: {args.attack_name}, dataset: {args.dataset}")
     for model in models:
         df_model = df[df["model"].str.contains(model)]
@@ -57,4 +40,8 @@ if __name__ == "__main__":
             err = get_error(acc, df_model.shape[0])[0]
             print(f"\tModel: {model}, Poison success: {100*acc: .2f} +/- {100*err: .2f} ({df_model.shape[0]} trials)")
 
-    # print("\nDone.\n")
+            mylist = df_model['batch']
+            trial_indices = [a for a in range(args.trials)]
+            for idx in [int(m) for m in mylist]:
+                trial_indices.remove(idx)
+            print(f"\tModel: {model}, \n\tTrials not yet complete: {trial_indices}\n")

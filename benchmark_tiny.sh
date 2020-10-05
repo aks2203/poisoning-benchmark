@@ -15,7 +15,7 @@ if (( $# == 2 )); then
   done
 elif (( $# == 1 )); then
   for filepath in $1*/; do
-    echo "python tinyimagenet_poison_test.py --poisons_path ${filepath} --output benchmark_100_trials_tiny" >> backdoor_test_batches.sh
+    echo "python tinyimagenet_poison_test.py --poisons_path ${filepath} --output benchmark_100_trials_tiny" >> benchmark_test_batches.sh
   done
 else
   echo "Illegal number of arguments."
