@@ -10,13 +10,12 @@
 import datetime
 import os
 import sys
-import torch.utils.data as data
-from models import *
-import torch
-import torchvision
-import torchvision.transforms as transforms
 import csv
 import numpy as np
+from models import *
+import torch, torchvision
+import torch.utils.data as data
+import torchvision.transforms as transforms
 from tinyimagenet_module import TinyImageNet
 
 data_mean_std_dict = {
@@ -29,13 +28,12 @@ data_mean_std_dict = {
 
 model_paths = {"cifar10": {"whitebox": "pretrained_models/ResNet18_CIFAR100_A.pth",
                            "blackbox": ["pretrained_models/MobileNetV2_CIFAR100.pth",
-                                                  "pretrained_models/VGG11_CIFAR100.pth"]},
+                                        "pretrained_models/VGG11_CIFAR100.pth"]},
                "tinyimagenet_last": {"whitebox":
                                          "pretrained_models/VGG16_TINYIMAGENET.pth",
-                                    "blackbox":
-                                        ["pretrained_models/ResNet34_TINYIMAGENET.pth",
-                                        "pretrained_models/MobileNetV2_TINYIMAGENET.pth"]}}
-
+                                     "blackbox":
+                                         ["pretrained_models/ResNet34_TINYIMAGENET.pth",
+                                          "pretrained_models/MobileNetV2_TINYIMAGENET.pth"]}}
 
 def now():
     return datetime.datetime.now().strftime("%Y%m%d %H:%M:%S")
@@ -44,7 +42,7 @@ def set_defaults(args):
     """set default arguments that user can't change
     """
     ffe_dict = {"cifar10": {"num_poisons": 25, "trainset_size": 2500, "lr": 0.01,
-                            "lr_schedule":[30], "epochs": 40, "image_size": 32, "patch_size": 5,
+                            "lr_schedule": [30], "epochs": 40, "image_size": 32, "patch_size": 5,
                             "pretrain_dataset": "cifar100"},
 
                 "tinyimagenet_last": {"num_poisons": 250, "trainset_size": 50000, "lr": 0.01,
@@ -85,7 +83,7 @@ def set_defaults(args):
 
 class PoisonedDataset(data.Dataset):
     def __init__(
-        self, trainset, poison_instances, size=None, transform=None, poison_indices=None
+            self, trainset, poison_instances, size=None, transform=None, poison_indices=None
     ):
         """ poison instances should be a list of tuples of poison examples
         and their respective labels like
@@ -500,7 +498,8 @@ def get_dataset(args, poison_tuples, poison_indices):
                                 transform=transform_train, classes="firsthalf")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
                                transform=transform_test, classes="firsthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1,
+                                                 shuffle=False)
         dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                transform=transforms.ToTensor(), classes="firsthalf")
         num_classes = 100
@@ -512,7 +511,8 @@ def get_dataset(args, poison_tuples, poison_indices):
                                 transform=transform_train, classes="lasthalf")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
                                transform=transform_test, classes="lasthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1,
+                                                 shuffle=False)
         dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                transform=transforms.ToTensor(), classes="lasthalf")
         num_classes = 100
@@ -524,7 +524,8 @@ def get_dataset(args, poison_tuples, poison_indices):
                                 transform=transform_train, classes="all")
         testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
                                transform=transform_test, classes="all")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1,
+                                                 shuffle=False)
         dataset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
                                transform=transforms.ToTensor(), classes="all")
         num_classes = 200

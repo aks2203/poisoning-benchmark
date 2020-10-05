@@ -6,18 +6,14 @@
 # June 2020
 #
 ############################################################
-import argparse
 import os
 import pickle
 import sys
 from collections import OrderedDict
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.utils.data as data
-import torchvision
 from torchvision import transforms as transforms
 
 from learning_module import now, get_model, load_model_from_checkpoint, get_dataset
@@ -27,7 +23,6 @@ from learning_module import (
     adjust_learning_rate,
     to_log_file,
     to_results_table,
-    PoisonedDataset,
     compute_perturbation_norms,
 )
 
@@ -67,7 +62,8 @@ def main(args):
         if len(target_img_tuple) == 4:
             patch = target_img_tuple[2] if torch.is_tensor(target_img_tuple[2]) else \
                 torch.tensor(target_img_tuple[2])
-            if patch.shape[0] != 3 or patch.shape[1] != args.patch_size or patch.shape[2] != args.patch_size:
+            if patch.shape[0] != 3 or patch.shape[1] != args.patch_size or \
+                    patch.shape[2] != args.patch_size:
                 print(
                     "Expected shape of the patch is [3, {args.patch_size, args.patch_size] "
                     "but is {}. Exiting from poison_test.py.".format(patch.shape)
@@ -98,7 +94,8 @@ def main(args):
         poison_tuples, dataset, poison_indices
     )
 
-    # the limit is '8/255' but we assert that it is smaller than 9/255 to account for PIL truncation.
+    # the limit is '8/255' but we assert that it is smaller than 9/255 to account for PIL
+    # truncation.
     assert max(poison_perturbation_norms) - 9 / 255 < 1e-5, "Attack not clean label!"
     ####################################################
 
@@ -168,9 +165,9 @@ def main(args):
     p_acc = net(target_img.unsqueeze(0).to(device)).max(1)[1].item() == poisoned_label
 
     print(
-        now()," poison success: ",
-        p_acc," poisoned_label: ",
-        poisoned_label," prediction: ",
+        now(), " poison success: ",
+        p_acc, " poisoned_label: ",
+        poisoned_label, " prediction: ",
         net(target_img.unsqueeze(0).to(device)).max(1)[1].item(),
     )
 

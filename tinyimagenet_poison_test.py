@@ -25,7 +25,8 @@ def main(args):
     out_dir = args.output
     if not args.from_scratch:
         print(
-            f"Testing poisons from {args.poisons_path}, in the transfer learning setting...\n".format()
+            f"Testing poisons from {args.poisons_path}, in the transfer learning "
+            f"setting...\n".format()
         )
 
         ####################################################
@@ -51,7 +52,8 @@ def main(args):
 
     else:
         print(
-            f"Testing poisons from {args.poisons_path}, in the from scratch training setting...\n".format()
+            f"Testing poisons from {args.poisons_path}, in the from scratch training "
+            f"setting...\n".format()
         )
 
         ####################################################
