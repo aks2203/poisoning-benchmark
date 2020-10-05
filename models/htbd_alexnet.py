@@ -31,9 +31,11 @@ class HTBDAlexNet(nn.Module):
         )
         self.linear = nn.Linear(feature_size, num_classes)
 
-    def forward(self, x):
+    def forward(self, x, penu=False):
         x = self.features(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
+        if penu:
+            return x
         out = self.linear(x)
         return out
