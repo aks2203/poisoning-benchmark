@@ -9,4 +9,4 @@ All the defaults are set to the values that were used during the generating the 
 ```crafting
 python craft_poisons_<attack_name>.py
 ```
-```attack_name``` can take four values here; fc, cp, clbd, htbd.
+```attack_name``` can take five values here; bp, cp, clbd, fc, htbd.

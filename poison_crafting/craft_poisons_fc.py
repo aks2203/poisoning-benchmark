@@ -15,12 +15,11 @@ import os
 import pickle
 import sys
 
-sys.path.append(os.path.realpath("."))
-
 import torch
 import torchvision
 import torchvision.transforms as transforms
 
+sys.path.append(os.path.realpath("."))
 from learning_module import get_transform
 from learning_module import (
     to_log_file,
@@ -59,22 +58,46 @@ def main(args):
         )
     elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="firsthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_last":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="lasthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_all":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="all")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_fc.py.")
         sys.exit()
@@ -125,13 +148,17 @@ def main(args):
 
     # fill list of tuples of poison images and labels
     poison_tuples = []
-    target_img = un_normalize_data(target_img, args.dataset) if args.normalize else target_img
+    target_img = (
+        un_normalize_data(target_img, args.dataset) if args.normalize else target_img
+    )
     beta = 4.0 if args.normalize else 0.1
 
     base_tuples = list(zip(base_imgs, base_labels))
     for base_img, label in base_tuples:
         # unnormalize the images for optimization
-        b_unnormalized = un_normalize_data(base_img, args.dataset) if args.normalize else base_img
+        b_unnormalized = (
+            un_normalize_data(base_img, args.dataset) if args.normalize else base_img
+        )
         objective_vals = [10e8]
         step_size = args.step_size
 
@@ -146,7 +173,10 @@ def main(args):
             x.requires_grad = True
             if args.normalize:
                 mini_batch = torch.stack(
-                    [normalize_data(x, args.dataset), normalize_data(target_img, args.dataset)]
+                    [
+                        normalize_data(x, args.dataset),
+                        normalize_data(target_img, args.dataset),
+                    ]
                 ).to(device)
             else:
                 mini_batch = torch.stack([x, target_img]).to(device)

@@ -30,7 +30,6 @@ from learning_module import (
 from tinyimagenet_module import TinyImageNet
 
 
-
 def main(args):
     """Main function to train and test a model
     input:
@@ -88,43 +87,85 @@ def main(args):
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
 
     elif args.dataset.lower() == "tinyimagenet_first":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="firsthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_train,
+            classes="firsthalf",
+        )
         trainset = PoisonedDataset(
             trainset, (), args.trainset_size, transform=transform_train
         )
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
 
     elif args.dataset.lower() == "tinyimagenet_last":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="lasthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_train,
+            classes="lasthalf",
+        )
         trainset = PoisonedDataset(
             trainset, (), args.trainset_size, transform=transform_train
         )
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
 
     elif args.dataset.lower() == "tinyimagenet_all":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="all")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_train,
+            classes="all",
+        )
         trainset = PoisonedDataset(
             trainset, (), args.trainset_size, transform=transform_train
         )
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
 
     else:
         print("Dataset not yet implemented. Ending run from train_model.py.")
@@ -251,7 +292,10 @@ if __name__ == "__main__":
         "--epochs", default=200, type=int, help="number of epochs for training"
     )
     parser.add_argument(
-        "--batch_size", default=128, type=int, help="batch size for training and testing"
+        "--batch_size",
+        default=128,
+        type=int,
+        help="batch size for training and testing",
     )
     parser.add_argument("--optimizer", default="SGD", type=str, help="optimizer")
     parser.add_argument(
@@ -286,8 +330,12 @@ if __name__ == "__main__":
         "--no-train_augment", dest="train_augment", action="store_false"
     )
     parser.set_defaults(train_augment=False)
-    parser.add_argument("--tinyimagenet_classes", default="all", type=str,
-                        help="which tiny-imagenet classes?")
+    parser.add_argument(
+        "--tinyimagenet_classes",
+        default="all",
+        type=str,
+        help="which tiny-imagenet classes?",
+    )
     args = parser.parse_args()
 
     main(args)

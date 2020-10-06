@@ -57,22 +57,46 @@ def main(args):
         )
     elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="firsthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_last":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="lasthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_all":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="all")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_cp.py.")
         sys.exit()
@@ -161,7 +185,9 @@ def main(args):
         target = un_normalize_data(target.squeeze(0), args.dataset)
         for i in range(len(poison_tuple_list)):
             poison_tuple_list[i] = (
-                transforms.ToPILImage()(un_normalize_data(poison_tuple_list[i][0], args.dataset)),
+                transforms.ToPILImage()(
+                    un_normalize_data(poison_tuple_list[i][0], args.dataset)
+                ),
                 poison_tuple_list[i][1],
             )
     else:

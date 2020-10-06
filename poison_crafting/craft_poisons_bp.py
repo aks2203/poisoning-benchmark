@@ -13,21 +13,14 @@ import os
 import pickle
 import sys
 
-sys.path.append(os.path.realpath("."))
-
 import torch.backends.cudnn as cudnn
 import torchvision
 import torchvision.transforms as transforms
-from Bullseye.trainer import make_convex_polytope_poisons
 
-from learning_module import (
-    now,
-    data_mean_std_dict,
-    get_transform,
-    to_log_file,
-    un_normalize_data,
-    load_model_from_checkpoint,
-)
+sys.path.append(os.path.realpath("."))
+from Bullseye.trainer import make_convex_polytope_poisons
+from learning_module import now, data_mean_std_dict, get_transform, to_log_file
+from learning_module import un_normalize_data, load_model_from_checkpoint
 from models import *
 from tinyimagenet_module import TinyImageNet
 
@@ -56,22 +49,46 @@ def main(args):
         )
     elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="firsthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_last":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="lasthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_all":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="all")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_cp.py.")
         sys.exit()
@@ -127,13 +144,16 @@ def main(args):
         os.makedirs(chk_path)
 
     base_tensor_list = [base_imgs[i] for i in range(base_imgs.shape[0])]
-    base_tensor_list = [bt.to('cuda') for bt in base_tensor_list]
+    base_tensor_list = [bt.to("cuda") for bt in base_tensor_list]
 
     poison_init = base_tensor_list
     mean, std = data_mean_std_dict[args.dataset]
     poison_tuple_list = make_convex_polytope_poisons(
-        sub_net_list, target_net, base_tensor_list,
-        target, 'cuda',
+        sub_net_list,
+        target_net,
+        base_tensor_list,
+        target,
+        "cuda",
         opt_method=args.poison_opt,
         lr=args.poison_lr,
         momentum=args.poison_momentum,
@@ -143,13 +163,14 @@ def main(args):
         decay_ratio=args.poison_decay_ratio,
         mean=torch.Tensor(mean).reshape(1, 3, 1, 1),
         std=torch.Tensor(std).reshape(1, 3, 1, 1),
-        chk_path=chk_path, poison_idxes=base_indices,
+        chk_path=chk_path,
+        poison_idxes=base_indices,
         poison_label=poisoned_label,
         tol=args.tol,
         start_ite=0,
         poison_init=poison_init,
         end2end=args.end2end,
-        mode='mean'
+        mode="mean",
     )
 
     # move poisons to PIL format
@@ -157,7 +178,9 @@ def main(args):
         target = un_normalize_data(target.squeeze(0))
         for i in range(len(poison_tuple_list)):
             poison_tuple_list[i] = (
-                transforms.ToPILImage()(un_normalize_data(poison_tuple_list[i][0], args.dataset)),
+                transforms.ToPILImage()(
+                    un_normalize_data(poison_tuple_list[i][0], args.dataset)
+                ),
                 poison_tuple_list[i][1],
             )
     else:
@@ -193,7 +216,7 @@ def main(args):
     with open(os.path.join(args.poisons_path, "poisons.pickle"), "wb") as handle:
         pickle.dump(poison_tuple_list, handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open(
-            os.path.join(args.poisons_path, "perturbation_norms.pickle"), "wb"
+        os.path.join(args.poisons_path, "perturbation_norms.pickle"), "wb"
     ) as handle:
         pickle.dump(poison_perturbation_norms, handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open(os.path.join(args.poisons_path, "base_indices.pickle"), "wb") as handle:
@@ -211,7 +234,7 @@ def main(args):
     return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Bullseye Polytope Poison Attack")
     parser.add_argument(

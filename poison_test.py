@@ -26,6 +26,7 @@ from learning_module import (
     compute_perturbation_norms,
 )
 
+
 def main(args):
     """Main function to check the success rate of the given poisons
     input:
@@ -52,18 +53,30 @@ def main(args):
         poison_indices = pickle.load(handle)
 
     # get the dataset and the dataloaders
-    trainloader, testloader, dataset, transform_train, transform_test, num_classes = \
-        get_dataset(args, poison_tuples, poison_indices)
+    (
+        trainloader,
+        testloader,
+        dataset,
+        transform_train,
+        transform_test,
+        num_classes,
+    ) = get_dataset(args, poison_tuples, poison_indices)
 
     # get the target image from pickled file
     with open(os.path.join(args.poisons_path, "target.pickle"), "rb") as handle:
         target_img_tuple = pickle.load(handle)
         target_class = target_img_tuple[1]
         if len(target_img_tuple) == 4:
-            patch = target_img_tuple[2] if torch.is_tensor(target_img_tuple[2]) else \
-                torch.tensor(target_img_tuple[2])
-            if patch.shape[0] != 3 or patch.shape[1] != args.patch_size or \
-                    patch.shape[2] != args.patch_size:
+            patch = (
+                target_img_tuple[2]
+                if torch.is_tensor(target_img_tuple[2])
+                else torch.tensor(target_img_tuple[2])
+            )
+            if (
+                patch.shape[0] != 3
+                or patch.shape[1] != args.patch_size
+                or patch.shape[2] != args.patch_size
+            ):
                 print(
                     "Expected shape of the patch is [3, {args.patch_size, args.patch_size] "
                     "but is {}. Exiting from poison_test.py.".format(patch.shape)
@@ -81,8 +94,11 @@ def main(args):
                 sys.exit()
 
             target_img_tensor = transforms.ToTensor()(target_img_pil)
-            target_img_tensor[:, starty : starty + args.patch_patch_size,
-                              startx : startx + args.patch_patch_size] = patch
+            target_img_tensor[
+                :,
+                starty : starty + args.patch_patch_size,
+                startx : startx + args.patch_patch_size,
+            ] = patch
             target_img_pil = transforms.ToPILImage()(target_img_tensor)
 
         else:
@@ -149,11 +165,16 @@ def main(args):
             )
             print(
                 now(),
-                " Epoch: ", epoch,
-                ", Loss: ", loss,
-                ", Training acc: ", acc,
-                ", Natural accuracy: ", natural_acc,
-                ", poison success: ", p_acc,
+                " Epoch: ",
+                epoch,
+                ", Loss: ",
+                loss,
+                ", Training acc: ",
+                acc,
+                ", Natural accuracy: ",
+                natural_acc,
+                ", poison success: ",
+                p_acc,
             )
 
     # test
@@ -165,9 +186,12 @@ def main(args):
     p_acc = net(target_img.unsqueeze(0).to(device)).max(1)[1].item() == poisoned_label
 
     print(
-        now(), " poison success: ",
-        p_acc, " poisoned_label: ",
-        poisoned_label, " prediction: ",
+        now(),
+        " poison success: ",
+        p_acc,
+        " poisoned_label: ",
+        poisoned_label,
+        " prediction: ",
         net(target_img.unsqueeze(0).to(device)).max(1)[1].item(),
     )
 

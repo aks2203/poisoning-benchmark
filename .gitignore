@@ -10,6 +10,4 @@ __pycache__/
 models/__pycache__
 output_default
 data/
-arjun_junk.py
-#launch/backdoor_test_batches*.sh
 launch/*

@@ -13,8 +13,6 @@ import os
 import pickle
 import sys
 
-sys.path.append(os.path.realpath("."))
-
 import numpy as np
 import torch
 import torch.utils.data
@@ -22,6 +20,7 @@ import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
 
+sys.path.append(os.path.realpath("."))
 from learning_module import (
     load_model_from_checkpoint,
     now,
@@ -78,14 +77,12 @@ def main(args):
     print(now(), "craft_poisons_htbd.py main() running...")
     mean, std = data_mean_std_dict[args.dataset]
     normalization_net = NormalizeByChannelMeanStd(mean, std)
-    un_normalization_net = NormalizeByChannelMeanStd(inv_mean, inv_std)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     net = load_model_from_checkpoint(
         args.model[0], args.model_path[0], args.pretrain_dataset
     )
     net.eval()
     normalization_net = normalization_net.to(device)
-    un_normalization_net = un_normalization_net.to(device)
     net = net.to(device)
 
     ####################################################
@@ -101,24 +98,48 @@ def main(args):
         num_per_class = 5000
     elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(False, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="firsthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
         num_per_class = 500
     elif args.dataset.lower() == "tinyimagenet_last":
         transform_test = get_transform(False, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="lasthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
         num_per_class = 500
     elif args.dataset.lower() == "tinyimagenet_all":
         transform_test = get_transform(False, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="all")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
         num_per_class = 500
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_htbd.py.")
@@ -138,7 +159,6 @@ def main(args):
     trigger = Image.open(args.trigger_path).convert("RGB")
     trigger = trans_trigger(trigger).unsqueeze(0).to(device)
 
-    # datasets and dataloaders (CIFAR10)
     target_img_idx = (
         setup["target index"] if args.target_img_idx is None else args.target_img_idx
     )
@@ -151,10 +171,8 @@ def main(args):
 
     # Get target images
     trainset_targets = np.array(trainset.targets)
-    # print(trainset_targets.shape, np.max(trainset_targets), target_class)
     target_class = target_class
     tar_idx = np.where(trainset_targets == target_class)[0]
-    # print(tar_idx.shape)
     indexes = np.arange(0, num_per_class)
     indexes = np.random.choice(indexes, len(base_indices), replace=False)
     target_img_idx = np.array(tar_idx[indexes]).astype(int)
@@ -220,9 +238,9 @@ def main(args):
             loss.backward()
 
             input_bases = input_bases - lr1 * input_bases.grad
-            pert = input_bases - base_imgs[i: i + remaining]
+            pert = input_bases - base_imgs[i : i + remaining]
             pert = torch.clamp(pert, -args.epsilon, args.epsilon).detach_()
-            input_bases = pert + base_imgs[i: i + remaining]
+            input_bases = pert + base_imgs[i : i + remaining]
             input_bases = input_bases.clamp(0, 1)
 
             if j % 100 == 0:

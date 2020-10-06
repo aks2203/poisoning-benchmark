@@ -12,8 +12,6 @@ import os
 import pickle
 import sys
 
-sys.path.append(os.path.realpath("."))
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -22,6 +20,7 @@ import torchvision
 from PIL import Image
 from torchvision import transforms
 
+sys.path.append(os.path.realpath("."))
 from learning_module import (
     load_model_from_checkpoint,
     now,
@@ -33,8 +32,7 @@ from tinyimagenet_module import TinyImageNet
 
 
 class AttackPGD(nn.Module):
-    """Class for the PGD adversarial attack
-    """
+    """Class for the PGD adversarial attack"""
 
     def __init__(self, basic_net, config):
         super(AttackPGD, self).__init__()
@@ -100,22 +98,46 @@ def main(args):
         )
     elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(False, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="firsthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_last":
         transform_test = get_transform(False, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="lasthalf")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
     elif args.dataset.lower() == "tinyimagenet_all":
         transform_test = get_transform(False, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_test, classes="all")
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_clbd.py.")
         sys.exit()
@@ -229,7 +251,9 @@ def main(args):
         pickle.dump(poisoned_tuples, handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open(os.path.join(args.poisons_path, "target.pickle"), "wb") as handle:
         pickle.dump(
-            target_tuple, handle, protocol=pickle.HIGHEST_PROTOCOL,
+            target_tuple,
+            handle,
+            protocol=pickle.HIGHEST_PROTOCOL,
         )
     with open(os.path.join(args.poisons_path, "base_indices.pickle"), "wb") as handle:
         pickle.dump(base_indices, handle, protocol=pickle.HIGHEST_PROTOCOL)

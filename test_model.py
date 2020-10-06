@@ -68,34 +68,76 @@ def main(args):
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
 
     elif args.dataset.lower() == "tinyimagenet_first":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="firsthalf")
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="firsthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_train,
+            classes="firsthalf",
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
 
     elif args.dataset.lower() == "tinyimagenet_last":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="lasthalf")
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="lasthalf")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_train,
+            classes="lasthalf",
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
 
     elif args.dataset.lower() == "tinyimagenet_all":
-        transform_train = get_transform(args.normalize, args.train_augment, dataset=args.dataset)
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
-        trainset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="train",
-                                transform=transform_train, classes="all")
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, num_workers=1, shuffle=True)
-        testset = TinyImageNet("/fs/cml-datasets/tiny_imagenet", split="val",
-                               transform=transform_test, classes="all")
-        testloader = torch.utils.data.DataLoader(testset, batch_size=64, num_workers=1, shuffle=False)
+        trainset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="train",
+            transform=transform_train,
+            classes="all",
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            "/fs/cml-datasets/tiny_imagenet",
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
 
     else:
         print("Dataset not yet implemented. Exiting from test_model.py.")
