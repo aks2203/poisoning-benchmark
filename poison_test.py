@@ -65,8 +65,8 @@ def main(args):
             if patch.shape[0] != 3 or patch.shape[1] != args.patch_size or \
                     patch.shape[2] != args.patch_size:
                 print(
-                    "Expected shape of the patch is [3, {args.patch_size, args.patch_size] "
-                    "but is {}. Exiting from poison_test.py.".format(patch.shape)
+                    f"Expected shape of the patch is [3, {args.patch_size}, {args.patch_size}] "
+                    f"but is {patch.shape}. Exiting from poison_test.py."
                 )
                 sys.exit()
 
@@ -111,7 +111,7 @@ def main(args):
         args.ffe = False  # we wouldn't fine tune from a random intiialization
         net = get_model(args.model, args.dataset)
 
-    # freeze weights in feature extractor if not doing end2end retraining
+    # freeze weights in feature extractor if not doing from scratch retraining
     if args.ffe:
         for param in net.parameters():
             param.requires_grad = False
@@ -137,7 +137,7 @@ def main(args):
     for epoch in range(args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_schedule, args.lr_factor)
         loss, acc = train(
-            net, trainloader, optimizer, criterion, device, train_bn=args.end2end
+            net, trainloader, optimizer, criterion, device, train_bn=not args.ffe
         )
 
         if (epoch + 1) % args.val_period == 0:
