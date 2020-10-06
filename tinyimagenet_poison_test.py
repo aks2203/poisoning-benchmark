@@ -84,14 +84,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--from_scratch", action="store_true", help="Train from scratch with poisons?"
     )
-    parser.add_argument(
-        "--poisons_path", type=str, required=True, help="where are the poisons?"
-    )
-    parser.add_argument("--dataset", type=str, required=True,
-                        help="dataset")
-    parser.add_argument(
-        "--output", default="output_default", type=str, help="output subdirectory"
-    )
+    parser.add_argument("--poisons_path", type=str, required=True, help="where are the poisons?")
+    parser.add_argument("--dataset", type=str, required=True, help="dataset")
+    parser.add_argument("--output", type=str, default="output_default", help="output subdirectory")
 
     args = parser.parse_args()
     set_defaults(args)
