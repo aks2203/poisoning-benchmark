@@ -12,7 +12,6 @@ import datetime
 import os
 import sys
 
-import torch
 import torch.utils.data as data
 import torchvision
 import torchvision.transforms as transforms
