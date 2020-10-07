@@ -29,25 +29,31 @@ def main(args):
             f"setting...\n"
         )
 
+        models = {
+            "cifar10": ["resnet18", "VGG11", "MobileNetV2"],
+            "tinyimagenet": ["vgg16", "resnet34", "mobilenet_v2"],
+        }[args.dataset.lower()]
+
         ####################################################
-        #           Frozen Feature Extractor (ffe)
-        print("Frozen Feature Extractor test:")
+        #          Transfer learning
+        print("Transfer learning test:")
+        print(args)
 
         # white-box attack
         args.output = os.path.join(out_dir, "ffe-wb")
-        args.model = "vgg16"
+        args.model = models[0]
         args.model_path = model_paths[args.dataset]["whitebox"]
         poison_test.main(args)
 
         # black box attacks
         args.output = os.path.join(out_dir, "ffe-bb")
 
-        args.model = "resnet34"
+        args.model = models[1]
         args.model_path = model_paths[args.dataset]["blackbox"][0]
         poison_test.main(args)
 
         args.model_path = model_paths[args.dataset]["blackbox"][1]
-        args.model = "mobilenet_v2"
+        args.model = models[2]
         poison_test.main(args)
 
     else:

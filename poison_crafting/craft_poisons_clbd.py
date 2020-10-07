@@ -286,7 +286,7 @@ if __name__ == "__main__":
         "--pretrain_dataset", default="CIFAR10", type=str, help="dataset"
     )
     parser.add_argument("--image_size", type=int, default=32, help="Image Size")
-    parser.add_argument("--patch_size", type=int, default=8, help="Size of the patch")
+    parser.add_argument("--patch_size", type=int, default=5, help="Size of the patch")
     parser.add_argument("--num_steps", type=int, default=20, help="Number of PGD steps")
     parser.add_argument(
         "--step_size", type=int, default=2 / 255, help="Step size for perturbation"

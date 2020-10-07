@@ -129,7 +129,7 @@ def main(args):
         args.ffe = False  # we wouldn't fine tune from a random intiialization
         net = get_model(args.model, args.dataset)
 
-    # freeze weights in feature extractor if not doing end2end retraining
+    # freeze weights in feature extractor if fine tuning
     if args.ffe:
         for param in net.parameters():
             param.requires_grad = False
@@ -155,7 +155,7 @@ def main(args):
     for epoch in range(args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_schedule, args.lr_factor)
         loss, acc = train(
-            net, trainloader, optimizer, criterion, device, train_bn=args.end2end
+            net, trainloader, optimizer, criterion, device, train_bn=-args.ffe
         )
 
         if (epoch + 1) % args.val_period == 0:
@@ -255,12 +255,9 @@ if __name__ == "__main__":
         type=str,
         help="where are the poisons?",
     )
-    parser.add_argument("--patch_size", default=8, type=int, help="patch size")
+    parser.add_argument("--patch_size", default=5, type=int, help="patch size")
     parser.add_argument(
         "--model_path", default=None, type=str, help="where is the model saved?"
-    )
-    parser.add_argument(
-        "--end2end", action="store_true", help="End to end retrain with poisons?"
     )
     parser.add_argument("--normalize", dest="normalize", action="store_true")
     parser.add_argument("--no-normalize", dest="normalize", action="store_false")

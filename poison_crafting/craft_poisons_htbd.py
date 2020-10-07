@@ -309,7 +309,7 @@ if __name__ == "__main__":
         "--model", type=str, default=["resnet18"], nargs="+", help="model name"
     )
     parser.add_argument("--image_size", type=int, default=32, help="Image Size")
-    parser.add_argument("--patch_size", type=int, default=8, help="Size of the patch")
+    parser.add_argument("--patch_size", type=int, default=5, help="Size of the patch")
     parser.add_argument(
         "--trigger_path",
         type=str,
