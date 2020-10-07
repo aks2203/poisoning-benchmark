@@ -196,10 +196,6 @@ if __name__ == "__main__":
     parser.add_argument("--no-normalize", dest="normalize", action="store_false")
     parser.set_defaults(normalize=True)
     parser.add_argument("--train_augment", dest="train_augment", action="store_true")
-    parser.add_argument(
-        "--no-train_augment", dest="train_augment", action="store_false"
-    )
-    parser.set_defaults(train_augment=False)
     args = parser.parse_args()
 
     main(args)

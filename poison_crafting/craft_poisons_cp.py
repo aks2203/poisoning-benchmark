@@ -155,7 +155,7 @@ def main(args):
     base_tensor_list = [bt.to("cuda") for bt in base_tensor_list]
 
     poison_init = base_tensor_list
-    mean, std = data_mean_std_dict[args.dataset]
+    mean, std = data_mean_std_dict[args.dataset.lower()]
     poison_tuple_list, recon_loss = make_convex_polytope_poisons(
         sub_net_list,
         target_net,

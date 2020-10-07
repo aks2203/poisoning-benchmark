@@ -205,7 +205,6 @@ def main(args):
         adjust_learning_rate(optimizer, epoch, args.lr_schedule, args.lr_factor)
         loss, acc = train(net, trainloader, optimizer, criterion, device)
         all_losses.append(loss)
-        print(epoch)
         if (epoch + 1) % args.val_period == 0:
             natural_acc = test(net, testloader, device)
             print(
@@ -304,7 +303,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", default="CIFAR10", type=str, help="dataset")
     parser.add_argument("--trainset_size", default=None, type=int, help="Trainset size")
     parser.add_argument(
-        "--val_period", default=20, type=int, help="print every __ epoch"
+        "--val_period", default=20, type=int, help="print every __ epochs"
     )
     parser.add_argument(
         "--output", default="output_default", type=str, help="output subdirectory"
@@ -326,16 +325,6 @@ if __name__ == "__main__":
     parser.add_argument("--no-normalize", dest="normalize", action="store_false")
     parser.set_defaults(normalize=True)
     parser.add_argument("--train_augment", dest="train_augment", action="store_true")
-    parser.add_argument(
-        "--no-train_augment", dest="train_augment", action="store_false"
-    )
-    parser.set_defaults(train_augment=False)
-    parser.add_argument(
-        "--tinyimagenet_classes",
-        default="all",
-        type=str,
-        help="which tiny-imagenet classes?",
-    )
     args = parser.parse_args()
 
     main(args)

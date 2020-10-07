@@ -72,7 +72,7 @@ def main(args):
         void
     """
     print(now(), "craft_poisons_clbd.py main() running...")
-    mean, std = data_mean_std_dict[args.dataset]
+    mean, std = data_mean_std_dict[args.dataset.lower()]
     mean = list(mean)
     std = list(std)
     normalize_net = NormalizeByChannelMeanStd(mean, std)
@@ -173,7 +173,7 @@ def main(args):
     trans_trigger = transforms.Compose(
         [transforms.Resize((args.patch_size, args.patch_size)), transforms.ToTensor()]
     )
-    trigger = Image.open("./poison_crafting/triggers/clbd_8.png").convert("RGB")
+    trigger = Image.open("./poison_crafting/triggers/clbd.png").convert("RGB")
     trigger = trans_trigger(trigger).unsqueeze(0).to(device)
 
     # craft poisons

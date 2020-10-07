@@ -147,7 +147,7 @@ def main(args):
     base_tensor_list = [bt.to("cuda") for bt in base_tensor_list]
 
     poison_init = base_tensor_list
-    mean, std = data_mean_std_dict[args.dataset]
+    mean, std = data_mean_std_dict[args.dataset.lower()]
     poison_tuple_list = make_convex_polytope_poisons(
         sub_net_list,
         target_net,
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     parser.set_defaults(normalize=True)
     parser.add_argument(
         "--poisons_path",
-        default="poison_examples/cp_poisons",
+        default="poison_examples/bp_poisons",
         type=str,
         help="Where to save the poisons?",
     )

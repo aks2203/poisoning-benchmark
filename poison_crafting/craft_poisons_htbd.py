@@ -75,7 +75,7 @@ def main(args):
         void
     """
     print(now(), "craft_poisons_htbd.py main() running...")
-    mean, std = data_mean_std_dict[args.dataset]
+    mean, std = data_mean_std_dict[args.dataset.lower()]
     normalization_net = NormalizeByChannelMeanStd(mean, std)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     net = load_model_from_checkpoint(
