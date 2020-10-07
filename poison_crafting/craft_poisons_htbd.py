@@ -356,4 +356,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if args.dataset.lower() == "cifar10":
+        args.image_size = 32
+    elif "tinyimagenet" in args.dataset.lower():
+        args.image_size = 64
+
     main(args)
