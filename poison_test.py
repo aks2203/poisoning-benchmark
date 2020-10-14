@@ -6,12 +6,10 @@
 # June 2020
 #
 ############################################################
-import argparse
 import os
 import pickle
 import sys
 from collections import OrderedDict
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -27,7 +25,6 @@ from learning_module import (
     to_results_table,
     compute_perturbation_norms,
 )
-
 
 def main(args):
     """Main function to check the success rate of the given poisons
@@ -55,30 +52,18 @@ def main(args):
         poison_indices = pickle.load(handle)
 
     # get the dataset and the dataloaders
-    (
-        trainloader,
-        testloader,
-        dataset,
-        transform_train,
-        transform_test,
-        num_classes,
-    ) = get_dataset(args, poison_tuples, poison_indices)
+    trainloader, testloader, dataset, transform_train, transform_test, num_classes = \
+        get_dataset(args, poison_tuples, poison_indices)
 
     # get the target image from pickled file
     with open(os.path.join(args.poisons_path, "target.pickle"), "rb") as handle:
         target_img_tuple = pickle.load(handle)
         target_class = target_img_tuple[1]
         if len(target_img_tuple) == 4:
-            patch = (
-                target_img_tuple[2]
-                if torch.is_tensor(target_img_tuple[2])
-                else torch.tensor(target_img_tuple[2])
-            )
-            if (
-                patch.shape[0] != 3
-                or patch.shape[1] != args.patch_size
-                or patch.shape[2] != args.patch_size
-            ):
+            patch = target_img_tuple[2] if torch.is_tensor(target_img_tuple[2]) else \
+                torch.tensor(target_img_tuple[2])
+            if patch.shape[0] != 3 or patch.shape[1] != args.patch_size or \
+                    patch.shape[2] != args.patch_size:
                 print(
                     f"Expected shape of the patch is [3, {args.patch_size}, {args.patch_size}] "
                     f"but is {patch.shape}. Exiting from poison_test.py."
@@ -96,11 +81,8 @@ def main(args):
                 sys.exit()
 
             target_img_tensor = transforms.ToTensor()(target_img_pil)
-            target_img_tensor[
-                :,
-                starty : starty + args.patch_size,
-                startx : startx + args.patch_size,
-            ] = patch
+            target_img_tensor[:, starty : starty + args.patch_patch_size,
+                              startx : startx + args.patch_patch_size] = patch
             target_img_pil = transforms.ToPILImage()(target_img_tensor)
 
         else:
@@ -129,7 +111,7 @@ def main(args):
         args.ffe = False  # we wouldn't fine tune from a random intiialization
         net = get_model(args.model, args.dataset)
 
-    # freeze weights in feature extractor if fine tuning
+    # freeze weights in feature extractor if not doing from scratch retraining
     if args.ffe:
         for param in net.parameters():
             param.requires_grad = False
@@ -155,7 +137,7 @@ def main(args):
     for epoch in range(args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_schedule, args.lr_factor)
         loss, acc = train(
-            net, trainloader, optimizer, criterion, device, train_bn=-args.ffe
+            net, trainloader, optimizer, criterion, device, train_bn=not args.ffe
         )
 
         if (epoch + 1) % args.val_period == 0:
@@ -167,16 +149,11 @@ def main(args):
             )
             print(
                 now(),
-                " Epoch: ",
-                epoch,
-                ", Loss: ",
-                loss,
-                ", Training acc: ",
-                acc,
-                ", Natural accuracy: ",
-                natural_acc,
-                ", poison success: ",
-                p_acc,
+                " Epoch: ", epoch,
+                ", Loss: ", loss,
+                ", Training acc: ", acc,
+                ", Natural accuracy: ", natural_acc,
+                ", poison success: ", p_acc,
             )
 
     # test
@@ -188,12 +165,9 @@ def main(args):
     p_acc = net(target_img.unsqueeze(0).to(device)).max(1)[1].item() == poisoned_label
 
     print(
-        now(),
-        " poison success: ",
-        p_acc,
-        " poisoned_label: ",
-        poisoned_label,
-        " prediction: ",
+        now(), " poison success: ",
+        p_acc, " poisoned_label: ",
+        poisoned_label, " prediction: ",
         net(target_img.unsqueeze(0).to(device)).max(1)[1].item(),
     )
 
@@ -217,64 +191,3 @@ def main(args):
     ####################################################
 
     return
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description="PyTorch poison benchmarking")
-    parser.add_argument("--lr", default=0.1, type=float, help="learning rate")
-    parser.add_argument(
-        "--lr_schedule", nargs="+", default=[30], type=int, help="where to decrease lr"
-    )
-    parser.add_argument(
-        "--lr_factor", default=0.1, type=float, help="factor by which to decrease lr"
-    )
-    parser.add_argument(
-        "--epochs", default=40, type=int, help="number of epochs for training"
-    )
-    parser.add_argument(
-        "--model", default="ResNet18", type=str, help="model for training"
-    )
-    parser.add_argument("--dataset", default="CIFAR10", type=str, help="dataset")
-    parser.add_argument(
-        "--pretrain_dataset",
-        default="CIFAR100",
-        type=str,
-        help="dataset for pretrained network",
-    )
-    parser.add_argument("--optimizer", default="SGD", type=str, help="optimizer")
-    parser.add_argument(
-        "--val_period", default=20, type=int, help="print every __ epoch"
-    )
-    parser.add_argument(
-        "--output", default="output_default", type=str, help="output subdirectory"
-    )
-    parser.add_argument(
-        "--poisons_path",
-        default="poison_examples/cp_example/",
-        type=str,
-        help="where are the poisons?",
-    )
-    parser.add_argument("--patch_size", default=5, type=int, help="patch size")
-    parser.add_argument(
-        "--model_path", default=None, type=str, help="where is the model saved?"
-    )
-    parser.add_argument("--normalize", dest="normalize", action="store_true")
-    parser.add_argument("--no-normalize", dest="normalize", action="store_false")
-    parser.set_defaults(normalize=True)
-    parser.add_argument("--train_augment", dest="train_augment", action="store_true")
-    parser.add_argument(
-        "--no-train_augment", dest="train_augment", action="store_false"
-    )
-    parser.set_defaults(train_augment=False)
-    parser.add_argument(
-        "--weight_decay", default=0.0002, type=float, help="weight decay coefficient"
-    )
-    parser.add_argument(
-        "--batch_size", default=128, type=int, help="training batch size"
-    )
-    parser.add_argument("--trainset_size", default=None, type=int, help="Trainset size")
-
-    args = parser.parse_args()
-
-    main(args)
