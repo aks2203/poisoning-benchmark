@@ -31,7 +31,7 @@ def main(args):
 
         models = {
             "cifar10": ["resnet18", "VGG11", "MobileNetV2"],
-            "tinyimagenet": ["vgg16", "resnet34", "mobilenet_v2"],
+            "tinyimagenet_last": ["vgg16", "resnet34", "mobilenet_v2"],
         }[args.dataset.lower()]
 
         ####################################################

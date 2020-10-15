@@ -36,10 +36,10 @@ model_paths = {
         ],
     },
     "tinyimagenet_last": {
-        "whitebox": "pretrained_models/VGG16_TINYIMAGENET.pth",
+        "whitebox": "pretrained_models/VGG16_Tinyimagenet_first.pth",
         "blackbox": [
-            "pretrained_models/ResNet34_TINYIMAGENET.pth",
-            "pretrained_models/MobileNetV2_TINYIMAGENET.pth",
+            "pretrained_models/ResNet34_Tinyimagenet_first.pth",
+            "pretrained_models/MobileNetV2_Tinyimagenet_first.pth",
         ],
     },
 }

@@ -22,20 +22,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     models = {
-        "cifar10": ["resnet18", "VGG11", "MobileNetV2"],
-        "tinyimagenet": ["vgg16", "resnet34", "mobilenet_v2"],
-    }[args.dataset]
+        "cifar10": ["ResNet18", "VGG11", "MobileNetV2"],
+        "tinyimagenet": ["VGG16", "ResNet34", "MobileNetV2"],
+    }[args.dataset.lower()]
     print(args.filepath)
     df = pd.read_csv(args.filepath, header=0)
     df["model"] = df.apply(lambda x: x["model"].split("/")[-1], axis=1)
-    df["batch"] = df.apply(lambda x: x["poisons path"].split("/")[-2], axis=1)
-    df["attack"] = df.apply(lambda x: x["poisons path"].split("/")[-4], axis=1)
+    df["batch"] = df.apply(lambda x: x["poisons path"].split("/")[-1], axis=1)
+    df["attack"] = df.apply(lambda x: x["poisons path"].split("/")[-2], axis=1)
     df = df[["attack", "model", "batch", "poison_acc"]]
     df.drop_duplicates(subset=["batch", "model", "attack"], inplace=True)
     df = df[df["attack"].str.contains(args.attack_name)]
 
     print(f"  Attack: {args.attack_name}, dataset: {args.dataset}")
     for model in models:
+        print(model)
         df_model = df[df["model"].str.contains(model)]
         if not df_model.empty:
             acc = df_model["poison_acc"].mean()
@@ -45,7 +46,8 @@ if __name__ == "__main__":
             )
 
             mylist = df_model["batch"]
-            trial_indices = [a for a in range(args.trials)]
-            for idx in [int(m) for m in mylist]:
-                trial_indices.remove(idx)
-            print(f"\tModel: {model}, \n\tTrials not yet complete: {trial_indices}\n")
+            if len(mylist) > 1:
+                trial_indices = [a for a in range(args.trials)]
+                for idx in [int(m) for m in mylist]:
+                    trial_indices.remove(idx)
+                print(f"\tModel: {model}, \n\tTrials not yet complete: {trial_indices}\n")

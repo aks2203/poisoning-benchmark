@@ -11,3 +11,4 @@ models/__pycache__
 output_default
 data/
 launch/*
+/tiny.sh
