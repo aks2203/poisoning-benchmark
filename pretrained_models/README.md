@@ -1,0 +1,1 @@
+Fill this directory with checkpoints downloaded from [here](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing).

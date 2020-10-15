@@ -49,7 +49,7 @@ pip install -r requirements.txt
 
 ## Pre-trained Models
 
-Pre-trained checkpoints used in this benchmark can be downloaded from [here](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing0). They should be copied into the [pretrained_models](pretrained_models) folder (which is empty until downloaded models are added).
+Pre-trained checkpoints used in this benchmark can be downloaded from [here](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing). They should be copied into the [pretrained_models](pretrained_models) folder (which is empty until downloaded models are added).
 
 
 ## Testing
