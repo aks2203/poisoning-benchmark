@@ -6,6 +6,9 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 
 #### CIFAR-10
 ##### Transfer Learning
+
+<div style="text-align: center;">
+
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |----------------    |--------------|
 |Feature Collision              | 16.0               | 3.50         |
@@ -13,8 +16,13 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Bullseye Polytope              | 85.0               | 8.5          |
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
+
+ </div>
     
 ##### From Scratch Training
+
+<div style="text-align: center;">
+
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
 | --------------------------| --------------    |-----------        |-----------|----------- |
 |Feature Collision          |  0                |  1                |  3        |  1.33      |   
@@ -24,8 +32,13 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor       |  0                |  1                |  2        |  1.00      | 
 |Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      | 
 
+</div>
+
 #### TinyImageNet
 ##### Transfer Learning
+
+<div style="text-align: center;">
+
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |----------------    |--------------|
 |Feature Collision              | 16.0               | 3.50         |
@@ -33,8 +46,13 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Bullseye Polytope              | 100.0              | 10.5         |
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
+
+</div>
     
 ##### From Scratch Training
+
+<div style="text-align: center;">
+
 | Attack                    | VGG11 (%) |
 | --------------------------|-----------|
 |Feature Collision          |  4        |  
@@ -43,6 +61,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Witches' Brew              |  32       |  
 |Clean Label Backdoor       |  0        |
 |Hidden Trigger Backdoor    |  0        |
+
+</div>
 
 ###### For more information on each attack consult [our paper](https://arxiv.org/abs/2006.12557) and the original sources listed there.)
 
