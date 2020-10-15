@@ -38,7 +38,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor       |  2        |
 |Hidden Trigger Backdoor    |  1        |
 
-
+---
+# Get Started
 ## Requirements
 
 To install requirements:
@@ -57,7 +58,7 @@ accordingly, to point to the unzipped TinyImageNet directory. (It is left in thi
 
 Pre-trained checkpoints used in this benchmark can be downloaded from [here](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing). They should be copied into the [pretrained_models](pretrained_models) folder (which is empty until downloaded models are added).
 
-
+---
 ## Testing
 
 To test a model, run:
