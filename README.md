@@ -47,6 +47,12 @@ To install requirements:
 pip install -r requirements.txt
 ```
 
+Then download the [TinyImageNet Dataset](https://tiny-imagenet.herokuapp.com/). (Additionally available on our [drive](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing)). In [learning_module.py](learing_module.py), change the line
+```
+TINYIMAGENET_ROOT = "/fs/cml-datasets/tiny_imagenet"
+```
+accordingly, to point to the unzipped TinyImageNet directory. (It is left in this repo to match our filesystem, and will likely not work with yours.)
+
 ## Pre-trained Models
 
 Pre-trained checkpoints used in this benchmark can be downloaded from [here](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing). They should be copied into the [pretrained_models](pretrained_models) folder (which is empty until downloaded models are added).

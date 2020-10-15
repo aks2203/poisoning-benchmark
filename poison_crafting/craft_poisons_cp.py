@@ -22,6 +22,7 @@ import torchvision.transforms as transforms
 from ConvexPolytope.trainer import make_convex_polytope_poisons
 
 from learning_module import (
+    TINYIMAGENET_ROOT,
     now,
     data_mean_std_dict,
     get_transform,
@@ -58,13 +59,13 @@ def main(args):
     elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_test,
             classes="firsthalf",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="firsthalf",
@@ -72,13 +73,13 @@ def main(args):
     elif args.dataset.lower() == "tinyimagenet_last":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_test,
             classes="lasthalf",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="lasthalf",
@@ -86,13 +87,13 @@ def main(args):
     elif args.dataset.lower() == "tinyimagenet_all":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_test,
             classes="all",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="all",

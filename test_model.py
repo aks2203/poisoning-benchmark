@@ -15,6 +15,7 @@ import torch.utils.data as data
 import torchvision
 
 from learning_module import (
+    TINYIMAGENET_ROOT,
     test,
     to_log_file,
     to_results_table,
@@ -73,7 +74,7 @@ def main(args):
         )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_train,
             classes="firsthalf",
@@ -82,7 +83,7 @@ def main(args):
             trainset, batch_size=64, num_workers=1, shuffle=True
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="firsthalf",
@@ -97,7 +98,7 @@ def main(args):
         )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_train,
             classes="lasthalf",
@@ -106,7 +107,7 @@ def main(args):
             trainset, batch_size=64, num_workers=1, shuffle=True
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="lasthalf",
@@ -121,7 +122,7 @@ def main(args):
         )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_train,
             classes="all",
@@ -130,7 +131,7 @@ def main(args):
             trainset, batch_size=64, num_workers=1, shuffle=True
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="all",

@@ -1,20 +1,35 @@
 # The Benchmark Challenge
 
-### The problem setup for finetuning tests:
-- 25 poisons, 2500 images in the finetuning dataset (random subset of CIFAR10 standard training set)
-- Models pre-trained on CIFAR100 transfered to CIFAR10
-- Perturbations bound in the l-infinity sense with epsilon = 8/255
+### The problem setup for transfer learning tests:
+#### CIFAR-10
+- 25 poisons, 2,500 images in the finetuning dataset (random subset of CIFAR10 standard training set).
+- Models pre-trained on CIFAR100 transfered to CIFAR10.
+- Perturbations bound in the l-infinity sense with epsilon = 8/255.
 
-We provide a ResNet18 pretrained on CIFAR100 on which the white-box tests will be done. The grey-box tests are done with an unseen (by the attacker) ResNet18 also pretrained on CIFAR10. The black-box tests are done on VGG11 and MobileNetV2 models.
+We provide a ResNet18 pretrained on CIFAR100 on which the white-box tests will be done. The black-box tests are done on VGG11 and MobileNetV2 models.
+
+#### TinyImageNet
+- 250 poisons, 50,000 images in the finetuning dataset (classes 100-199 in TinyImageNet standard training set).
+- Models pre-trained on classes 0-99 of TinyImageNet standard training set.
+- Perturbations bound in the l-infinity sense with epsilon = 8/255.
+
+We provide a VGG16 pretrained on classes 0-99 of TinyImageNet standard training set on which the white-box tests will be done. The black-box tests are done on ResNet34 and MobileNetV2 models.
+
+---
 
 ### Problem set up for training from scratch:
-- 500 poisons, with entire CIFAR10 standard training set
-- Perturbations bound in the l-infinity sense with epsilon = 8/255
+#### CIFAR-10
+- 500 poisons, with entire CIFAR10 standard training set.
+- Perturbations bound in the l-infinity sense with epsilon = 8/255.
+- We train ResNet18, VGG11, and MobileNetV2 models for this test (i.e. no white-box / grey-box / black-box version).
+#### TinyImageNet
+- 250 poisons, with entire TinyImageNet standard training set.
+- Perturbations bound in the l-infinity sense with epsilon = 8/255.
+- We train VGG16, ResNet34, and MobileNetV2 models for this test (i.e. no white-box / grey-box / black-box version).
+___
+Python dictionaries with set-up information are stored in the [poison_setups](poison_setups) directory.  The files there each contain a list of dictionaries. Each dictionary has four entries:
 
-We train ResNet18, VGG11, and MobileNetV2 models for this test (i.e. no white-box / grey-box / black-box version).
-- poison_setups_transfer_learning.pickle and poison_setups_from_scratch.pickle each contain a list of dictionaries. Each dictionary has four entries:
-
-    (i) The value corresponding to the key "target class" is an integer denoting the label of the target image in the dataset.
+   (i) The value corresponding to the key "target class" is an integer denoting the label of the target image in the dataset.
    
    (ii) The value corresponding to the key "target index" is an integer denoting the index of the target image in the CIFAR10 testing data.
   
@@ -22,7 +37,7 @@ We train ResNet18, VGG11, and MobileNetV2 models for this test (i.e. no white-bo
   
    (iv) The value corresponding to the key "base indices" is an numpy array denoting the indices of the base images in the CIFAR10 training data.
 
-The output from the attacker should be three different pickle files: poisons.pickle, base_indices.pickle, target.pickle.  The file poisons.pickle should contain a list of tuples, where each tuple has two entries. Each tuple is one clean-label poison example where the first entry is a PIL image object and the second is the label (this should match the poisoned_label variable). In base_indices.pickle the indices of the clean base images within the CIFAR10 training set should be saved so that we can removed the clean images from the training set when evaluating the attack. The file target.pickle should have a single tuple with a PIL image object and an integer class label. In the triggered backdoor setting, this target tuple should also conain the 5x5 patch and and (x,y) coordinate locating the patch in the target image. Even triggerless attacks must submit this, since the evaluation will look to this file in order to load the target.
+The output from the attacker should be three different pickle files: poisons.pickle, base_indices.pickle, target.pickle.  The file poisons.pickle should contain a list of tuples, where each tuple has two entries. Each tuple is one clean-label poison example where the first entry is a PIL image object and the second is the label (this should match the poisoned_label variable). In base_indices.pickle the indices of the clean base images within the training set should be saved so that we can removed the clean images from the training set when evaluating the attack. The file target.pickle should have a single tuple with a PIL image object and an integer class label. In the triggered backdoor setting, this target tuple should also conain the 5x5 patch and and (x,y) coordinate locating the patch in the target image. Even triggerless attacks must submit this, since the evaluation will look to this file in order to load the target.
 
 The setups file can be opened and loaded, and the output files can be saved with the following example python code.
 
@@ -31,7 +46,7 @@ With PyTorch:
     import pickle
     from torchvision import datasets, transforms
 
-    with open("poison_setups_transfer_learning.pickle", "rb") as handle:
+    with open("poison_setups/cifar10_transfer_learning.pickle", "rb") as handle:
         setup_dicts = pickle.load(handle)
 
     # Which set up to do in this run?
@@ -91,7 +106,7 @@ With TensorFlow:
     import pickle
     from PIL import Image
 
-    with open("poison_setups_transfer_learning.pickle", "rb") as handle:
+    with open("poison_setups/cifar10_transfer_learning.pickle", "rb") as handle:
         setup_dicts = pickle.load(handle)
 
     # Which set up to do in this run?

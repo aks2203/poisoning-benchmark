@@ -22,6 +22,7 @@ import torchvision.transforms as transforms
 sys.path.append(os.path.realpath("."))
 from learning_module import get_transform
 from learning_module import (
+    TINYIMAGENET_ROOT,
     to_log_file,
     now,
     normalize_data,
@@ -59,13 +60,13 @@ def main(args):
     elif args.dataset.lower() == "tinyimagenet_first":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_test,
             classes="firsthalf",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="firsthalf",
@@ -73,13 +74,13 @@ def main(args):
     elif args.dataset.lower() == "tinyimagenet_last":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_test,
             classes="lasthalf",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="lasthalf",
@@ -87,13 +88,13 @@ def main(args):
     elif args.dataset.lower() == "tinyimagenet_all":
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         trainset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_test,
             classes="all",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="all",

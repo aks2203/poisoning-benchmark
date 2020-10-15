@@ -19,6 +19,8 @@ import torchvision.transforms as transforms
 from models import *
 from tinyimagenet_module import TinyImageNet
 
+TINYIMAGENET_ROOT = "/fs/cml-datasets/tiny_imagenet"
+
 data_mean_std_dict = {
     "cifar10": ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     "cifar100": ((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
@@ -536,13 +538,13 @@ def get_dataset(args, poison_tuples, poison_indices):
         )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         cleanset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_train,
             classes="firsthalf",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="firsthalf",
@@ -551,7 +553,7 @@ def get_dataset(args, poison_tuples, poison_indices):
             testset, batch_size=64, num_workers=1, shuffle=False
         )
         dataset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transforms.ToTensor(),
             classes="firsthalf",
@@ -564,13 +566,13 @@ def get_dataset(args, poison_tuples, poison_indices):
         )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         cleanset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_train,
             classes="lasthalf",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="lasthalf",
@@ -579,7 +581,7 @@ def get_dataset(args, poison_tuples, poison_indices):
             testset, batch_size=64, num_workers=1, shuffle=False
         )
         dataset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transforms.ToTensor(),
             classes="lasthalf",
@@ -592,13 +594,13 @@ def get_dataset(args, poison_tuples, poison_indices):
         )
         transform_test = get_transform(args.normalize, False, dataset=args.dataset)
         cleanset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transform_train,
             classes="all",
         )
         testset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="val",
             transform=transform_test,
             classes="all",
@@ -607,7 +609,7 @@ def get_dataset(args, poison_tuples, poison_indices):
             testset, batch_size=64, num_workers=1, shuffle=False
         )
         dataset = TinyImageNet(
-            "/fs/cml-datasets/tiny_imagenet",
+            TINYIMAGENET_ROOT,
             split="train",
             transform=transforms.ToTensor(),
             classes="all",
