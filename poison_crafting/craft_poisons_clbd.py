@@ -295,7 +295,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--poison_setups",
         type=str,
-        default="./poison_setups_transfer_learning.pickle",
+        default="./poison_setups/cifar10_transfer_learning.pickle",
         help="poison setup pickle file",
     )
     parser.add_argument("--setup_idx", type=int, default=0, help="Which setup to use")
