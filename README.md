@@ -17,7 +17,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 ##### From Scratch Training
 
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
-| --------------------------| -----------------:|------------------:|----------:|---------- :|
+| --------------------------| -----------------:|------------------:|----------:|-----------:|
 |Feature Collision          |  0                |  1                |  3        |  1.33      |   
 |Convex Polytope            |  0                |  1                |  1        |  0.67      |   
 |Bullseye Polytope          |  3                |  3                |  1        |  2.33      |   
