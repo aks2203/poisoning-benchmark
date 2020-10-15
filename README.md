@@ -6,7 +6,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 ##### Transfer Learning
 
 | Attack                        | White-box (%)      | Black-box (%)|
-| ------------------            |----------------    :|--------------:|
+| ------------------            |-------------------:|-------------:|
 |Feature Collision              | 16.0               | 3.50         |
 |Convex Polytope                | 24.0               | 4.5          |
 |Bullseye Polytope              | 85.0               | 8.5          |
@@ -17,7 +17,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 ##### From Scratch Training
 
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
-| --------------------------| --------------    :|-----------        :|-----------:|----------- :|
+| --------------------------| -----------------:|------------------:|----------:|---------- :|
 |Feature Collision          |  0                |  1                |  3        |  1.33      |   
 |Convex Polytope            |  0                |  1                |  1        |  0.67      |   
 |Bullseye Polytope          |  3                |  3                |  1        |  2.33      |   
@@ -31,7 +31,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 ##### Transfer Learning
 
 | Attack                        | White-box (%)      | Black-box (%)|
-| ------------------            |----------------    :|--------------:|
+| ------------------            |-------------------:|-------------:|
 |Feature Collision              | 16.0               | 3.50         |
 |Convex Polytope                | 24.0               | 4.5          |
 |Bullseye Polytope              | 100.0              | 10.5         |
@@ -41,7 +41,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 ##### From Scratch Training
 
 | Attack                    | VGG11 (%) |
-| --------------------------|-----------:|
+| --------------------------|----------:|
 |Feature Collision          |  4        |  
 |Convex Polytope            |  0        |  
 |Bullseye Polytope          |  44       |  
