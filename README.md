@@ -10,6 +10,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 | ------------------            |----------------    |--------------|
 |Feature Collision              | 16.0               | 3.50         |
 |Convex Polytope                | 24.0               | 4.5          |
+|Bullseye Polytope              | 85.0               | 8.5          |
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
     
@@ -18,6 +19,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 | --------------------------| --------------    |-----------        |-----------|----------- |
 |Feature Collision          |  0                |  1                |  3        |  1.33      |   
 |Convex Polytope            |  0                |  1                |  1        |  0.67      |   
+|Bullseye Polytope          |  3                |  3                |  1        |  2.33      |   
+|Witches' Brew              |  45               |  25               |  8        |  26.00     |   
 |Clean Label Backdoor       |  0                |  1                |  2        |  1.00      | 
 |Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      | 
 
@@ -27,18 +30,24 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 | ------------------            |----------------    |--------------|
 |Feature Collision              | 16.0               | 3.50         |
 |Convex Polytope                | 24.0               | 4.5          |
+|Bullseye Polytope              | 100.0              | 10.5         |
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
     
 ##### From Scratch Training
 | Attack                    | VGG11 (%) |
 | --------------------------|-----------|
-|Feature Collision          |  3        |  
-|Convex Polytope            |  1        |  
-|Clean Label Backdoor       |  2        |
-|Hidden Trigger Backdoor    |  1        |
+|Feature Collision          |  4        |  
+|Convex Polytope            |  0        |  
+|Bullseye Polytope          |  44       |  
+|Witches' Brew              |  32       |  
+|Clean Label Backdoor       |  0        |
+|Hidden Trigger Backdoor    |  0        |
+
+###### For more information on each attack consult [our paper](https://arxiv.org/abs/2006.12557) and the original sources listed there.)
 
 ---
+
 # Get Started
 ## Requirements
 
