@@ -2,12 +2,8 @@
 
 This repository is the official implementation of [Just How Toxic is Data Poisoning? A Unified Benchmark for Backdoor and Data Poisoning Attacks](https://arxiv.org/abs/2006.12557). 
 
-### Benchmark Scores
-
-#### CIFAR-10
+### CIFAR-10
 ##### Transfer Learning
-
-<div style="text-align: center;">
 
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |----------------    |--------------|
@@ -17,11 +13,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
 
- </div>
     
 ##### From Scratch Training
-
-<div style="text-align: center;">
 
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
 | --------------------------| --------------    |-----------        |-----------|----------- |
@@ -32,12 +25,10 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor       |  0                |  1                |  2        |  1.00      | 
 |Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      | 
 
-</div>
+***
 
-#### TinyImageNet
+### TinyImageNet
 ##### Transfer Learning
-
-<div style="text-align: center;">
 
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |----------------    |--------------|
@@ -46,12 +37,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Bullseye Polytope              | 100.0              | 10.5         |
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
-
-</div>
     
 ##### From Scratch Training
-
-<div style="text-align: center;">
 
 | Attack                    | VGG11 (%) |
 | --------------------------|-----------|
@@ -62,13 +49,11 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor       |  0        |
 |Hidden Trigger Backdoor    |  0        |
 
-</div>
-
 ###### For more information on each attack consult [our paper](https://arxiv.org/abs/2006.12557) and the original sources listed there.)
 
 ---
 
-# Get Started
+# Getting Started:
 ## Requirements
 
 To install requirements:
@@ -77,7 +62,7 @@ To install requirements:
 pip install -r requirements.txt
 ```
 
-Then download the [TinyImageNet Dataset](https://tiny-imagenet.herokuapp.com/). (Additionally available on our [drive](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing)). In [learning_module.py](learing_module.py), change the line
+Then download the [TinyImageNet Dataset](https://tiny-imagenet.herokuapp.com/). (Additionally available on our [drive](https://drive.google.com/drive/folders/1MMebJznKStXcFT31MKyyec2GMWcsrwtP?usp=sharing)). In [learning_module.py](learning_module.py), change the line
 ```
 TINYIMAGENET_ROOT = "/fs/cml-datasets/tiny_imagenet"
 ```
