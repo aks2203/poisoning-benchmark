@@ -301,13 +301,6 @@ def make_convex_polytope_poisons(
             )
             sys.stdout.flush()
 
-            # save the checkpoints
-            poison_tuple_list = get_poison_tuples(poison_batch, poison_label)
-            torch.save(
-                {"poison": poison_tuple_list, "idx": poison_idxes},
-                os.path.join(chk_path, "poison_%05d.pth" % ite),
-            )
-
     return get_poison_tuples(poison_batch, poison_label), total_loss.item()
 
 

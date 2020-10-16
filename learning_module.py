@@ -7,19 +7,43 @@
 #
 ############################################################
 
+import csv
 import datetime
 import os
 import sys
+
 import torch.utils.data as data
-from models import *
-import torch
+import torchvision
 import torchvision.transforms as transforms
-import csv
-import numpy as np
+
+from models import *
+from tinyimagenet_module import TinyImageNet
+
+TINYIMAGENET_ROOT = "/fs/cml-datasets/tiny_imagenet"
 
 data_mean_std_dict = {
-    "CIFAR10": ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-    "CIFAR100": ((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
+    "cifar10": ((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    "cifar100": ((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
+    "tinyimagenet_all": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262)),
+    "tinyimagenet_first": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262)),
+    "tinyimagenet_last": ((0.4802, 0.4481, 0.3975), (0.2302, 0.2265, 0.2262)),
+}
+
+model_paths = {
+    "cifar10": {
+        "whitebox": "pretrained_models/ResNet18_CIFAR100_A.pth",
+        "blackbox": [
+            "pretrained_models/MobileNetV2_CIFAR100.pth",
+            "pretrained_models/VGG11_CIFAR100.pth",
+        ],
+    },
+    "tinyimagenet_last": {
+        "whitebox": "pretrained_models/VGG16_Tinyimagenet_first.pth",
+        "blackbox": [
+            "pretrained_models/ResNet34_Tinyimagenet_first.pth",
+            "pretrained_models/MobileNetV2_Tinyimagenet_first.pth",
+        ],
+    },
 }
 
 
@@ -27,11 +51,82 @@ def now():
     return datetime.datetime.now().strftime("%Y%m%d %H:%M:%S")
 
 
+def set_defaults(args):
+    """set default arguments that user can't change"""
+    ffe_dict = {
+        "cifar10": {
+            "num_poisons": 25,
+            "trainset_size": 2500,
+            "lr": 0.01,
+            "lr_schedule": [30],
+            "epochs": 40,
+            "image_size": 32,
+            "patch_size": 5,
+            "pretrain_dataset": "cifar100",
+        },
+        "tinyimagenet_last": {
+            "num_poisons": 250,
+            "trainset_size": 50000,
+            "lr": 0.01,
+            "lr_schedule": [30],
+            "epochs": 40,
+            "image_size": 64,
+            "patch_size": 8,
+            "pretrain_dataset": "tinyimagenet_first",
+        },
+    }
+
+    fromscratch_dict = {
+        "cifar10": {
+            "num_poisons": 500,
+            "trainset_size": 50000,
+            "lr": 0.1,
+            "lr_schedule": [100, 150],
+            "epochs": 200,
+            "image_size": 32,
+            "patch_size": 5,
+        },
+        "tinyimagenet_all": {
+            "num_poisons": 250,
+            "trainset_size": 100000,
+            "lr": 0.1,
+            "lr_schedule": [100, 150],
+            "epochs": 200,
+            "image_size": 64,
+            "patch_size": 8,
+        },
+    }
+
+    if not args.from_scratch:
+        sub_dict = ffe_dict[args.dataset.lower()]
+        args.pretrain_dataset = sub_dict["pretrain_dataset"]
+        args.ffe = True
+
+    else:
+        sub_dict = fromscratch_dict[args.dataset.lower()]
+        args.ffe = False
+
+    args.num_poisons = sub_dict["num_poisons"]
+    args.trainset_size = sub_dict["trainset_size"]
+    args.lr = sub_dict["lr"]
+    args.lr_schedule = sub_dict["lr_schedule"]
+    args.epochs = sub_dict["epochs"]
+    args.image_size = sub_dict["image_size"]
+    args.patch_size = sub_dict["patch_size"]
+    args.train_augment = True
+    args.normalize = True
+    args.weight_decay = 2e-04
+    args.batch_size = 128
+    args.lr_factor = 0.1
+    args.val_period = 20
+    args.optimizer = "SGD"
+
+
 class PoisonedDataset(data.Dataset):
     def __init__(
         self, trainset, poison_instances, size=None, transform=None, poison_indices=None
     ):
-        """ poison instances should be a list of tuples of poison examples
+        """poison instances should be a list of tuples of poison examples
         and their respective labels like
             [(x_0, y_0), (x_1, y_1) ...]
         """
@@ -81,8 +176,7 @@ class PoisonedDataset(data.Dataset):
 
 
 class NormalizeByChannelMeanStd(nn.Module):
-    """Normalizing the input to the network
-    """
+    """Normalizing the input to the network"""
 
     def __init__(self, mean, std):
         super(NormalizeByChannelMeanStd, self).__init__()
@@ -201,7 +295,7 @@ def test(net, testloader, device):
 
 
 def train(net, trainloader, optimizer, criterion, device, train_bn=True):
-    """ Function to perform one epoch of training
+    """Function to perform one epoch of training
     input:
         net:            Pytorch network object
         trainloader:    Pytorch dataloader object
@@ -256,8 +350,11 @@ def get_transform(normalize, augment, dataset="CIFAR10"):
         Pytorch tranforms.Compose with list of all transformations
     """
 
+    dataset = dataset.lower()
     mean, std = data_mean_std_dict[dataset]
-    cropsize = 32
+    if "tinyimagenet" in dataset:
+        dataset = "tinyimagenet"
+    cropsize = {"cifar10": 32, "cifar100": 32, "tinyimagenet": 64}[dataset]
     padding = 4
 
     if normalize and augment:
@@ -296,7 +393,7 @@ def get_model(model, dataset="CIFAR10"):
             net = resnet18()
         elif model == "resnet32":
             net = resnet32()
-        elif model == "mobilenetv2":
+        elif model == "mobilenet_v2":
             net = MobileNetV2()
         elif model == "alexnet":
             net = AlexNet()
@@ -315,7 +412,7 @@ def get_model(model, dataset="CIFAR10"):
             net = resnet18(num_classes=100)
         elif model == "resnet32":
             net = resnet32(num_classes=100)
-        elif model == "mobilenetv2":
+        elif model == "mobilenet_v2":
             net = MobileNetV2(num_classes=100)
         elif model == "vgg11":
             net = vgg11(num_classes=100)
@@ -324,6 +421,30 @@ def get_model(model, dataset="CIFAR10"):
                 "Model not yet implemented. Exiting from learning_module.get_model()."
             )
             sys.exit()
+
+    elif dataset == "tinyimagenet_all":
+        if model == "resnet34":
+            net = resnet34(num_classes=200, conv1_size=7)
+        elif model == "vgg16":
+            net = vgg16(num_classes=200)
+        elif model == "mobilenet_v2":
+            net = MobileNetV2(num_classes=200)
+
+    elif dataset == "tinyimagenet_first":
+        if model == "resnet34":
+            net = resnet34(num_classes=100, conv1_size=7)
+        elif model == "vgg16":
+            net = vgg16(num_classes=100)
+        elif model == "mobilenet_v2":
+            net = MobileNetV2(num_classes=100)
+
+    elif dataset == "tinyimagenet_last":
+        if model == "resnet34":
+            net = resnet34(num_classes=100, conv1_size=7)
+        elif model == "vgg16":
+            net = vgg16(num_classes=100)
+        elif model == "mobilenet_v2":
+            net = MobileNetV2(num_classes=100)
     else:
         print("Dataset not yet implemented. Exiting from learning_module.get_model().")
         sys.exit()
@@ -347,29 +468,32 @@ def load_model_from_checkpoint(model, model_path, dataset="CIFAR10"):
     return net
 
 
-def un_normalize_cifar(x):
-    """Function to de-normalise the CIFAR data
+def un_normalize_data(x, dataset="cifar10"):
+    """Function to de-normalise image data
     input:
         x:      Tensor to be de-normalised
     return:
         De-normalised tensor
     """
-    inv_cifar_mean = (-0.4914 / 0.2023, -0.4822 / 0.1994, -0.4465 / 0.2010)
-    inv_cifar_std = (1.0 / 0.2023, 1.0 / 0.1994, 1.0 / 0.2010)
-    transform_unnormalize = transforms.Normalize(inv_cifar_mean, inv_cifar_std)
-    return transform_unnormalize(x)
+    dataset = dataset.lower()
+    mean, std = data_mean_std_dict[dataset]
+    inv_mean = [-mean[i] / std[i] for i in range(len(mean))]
+    inv_std = [1.0 / std[i] for i in range(len(std))]
+    transform = transforms.Compose([transforms.Normalize(inv_mean, inv_std)])
+    return transform(x)
 
 
-def normalize_cifar(x):
-    """Function to normalise the CIFAR data
+def normalize_data(x, dataset="cifar10"):
+    """Function to normalise image data
     input:
         x:      Tensor to be normalised
     return:
         Normalised tensor
     """
-    cifar_mean, cifar_std = data_mean_std_dict["CIFAR10"]
-    transform_normalize = transforms.Normalize(cifar_mean, cifar_std)
-    return transform_normalize(x)
+    dataset = dataset.lower()
+    mean, std = data_mean_std_dict[dataset]
+    transform = transforms.Compose([transforms.Normalize(mean, std)])
+    return transform(x)
 
 
 def compute_perturbation_norms(poisons, dataset, base_indices):
@@ -388,3 +512,126 @@ def compute_perturbation_norms(poisons, dataset, base_indices):
             torch.max(torch.abs(poison_tensors[i] - dataset[idx][0])).item()
         )
     return np.array(perturbation_norms)
+
+
+def get_dataset(args, poison_tuples, poison_indices):
+
+    # get datasets from torchvision
+    if args.dataset.lower() == "cifar10":
+        transform_train = get_transform(args.normalize, args.train_augment)
+        transform_test = get_transform(args.normalize, False)
+        cleanset = torchvision.datasets.CIFAR10(
+            root="./data", train=True, download=True, transform=transform_train
+        )
+        testset = torchvision.datasets.CIFAR10(
+            root="./data", train=False, download=True, transform=transform_test
+        )
+        testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
+        dataset = torchvision.datasets.CIFAR10(
+            root="./data", train=True, download=True, transform=transforms.ToTensor()
+        )
+        num_classes = 10
+
+    elif args.dataset.lower() == "tinyimagenet_first":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        cleanset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+        dataset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transforms.ToTensor(),
+            classes="firsthalf",
+        )
+        num_classes = 100
+
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        cleanset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+        dataset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transforms.ToTensor(),
+            classes="lasthalf",
+        )
+        num_classes = 100
+
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        cleanset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+        dataset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transforms.ToTensor(),
+            classes="all",
+        )
+        num_classes = 200
+
+    else:
+        print("Dataset not yet implemented. Exiting from poison_test.py.")
+        sys.exit()
+
+    trainset = PoisonedDataset(
+        cleanset, poison_tuples, args.trainset_size, transform_train, poison_indices
+    )
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=args.batch_size, shuffle=True
+    )
+
+    return (
+        trainloader,
+        testloader,
+        dataset,
+        transform_train,
+        transform_test,
+        num_classes,
+    )

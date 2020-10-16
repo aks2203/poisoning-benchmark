@@ -15,6 +15,7 @@ import torch.utils.data as data
 import torchvision
 
 from learning_module import (
+    TINYIMAGENET_ROOT,
     test,
     to_log_file,
     to_results_table,
@@ -23,6 +24,7 @@ from learning_module import (
     load_model_from_checkpoint,
     get_transform,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):
@@ -43,7 +45,7 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_train = get_transform(args.normalize, args.train_augment)
         transform_test = get_transform(args.normalize, False)
         trainset = torchvision.datasets.CIFAR10(
@@ -54,7 +56,7 @@ def main(args):
             root="./data", train=False, download=True, transform=transform_test
         )
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
-    elif args.dataset == "CIFAR100":
+    elif args.dataset.lower() == "cifar100":
         transform_train = get_transform(args.normalize, args.train_augment)
         transform_test = get_transform(args.normalize, False)
         trainset = torchvision.datasets.CIFAR100(
@@ -65,6 +67,79 @@ def main(args):
             root="./data", train=False, download=True, transform=transform_test
         )
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
+
+    elif args.dataset.lower() == "tinyimagenet_first":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="firsthalf",
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="lasthalf",
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="all",
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+
     else:
         print("Dataset not yet implemented. Exiting from test_model.py.")
         sys.exit()
@@ -122,10 +197,6 @@ if __name__ == "__main__":
     parser.add_argument("--no-normalize", dest="normalize", action="store_false")
     parser.set_defaults(normalize=True)
     parser.add_argument("--train_augment", dest="train_augment", action="store_true")
-    parser.add_argument(
-        "--no-train_augment", dest="train_augment", action="store_false"
-    )
-    parser.set_defaults(train_augment=False)
     args = parser.parse_args()
 
     main(args)

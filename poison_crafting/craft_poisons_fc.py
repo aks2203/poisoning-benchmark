@@ -7,7 +7,7 @@
 # Reference: A. Shafahi, W. R. Huang, M. Najibi, O. Suciu, C. Studer,
 #     T. Dumitras, and T. Goldstein. Poison frogs! targeted clean-label
 #     poisoning attacks on neural networks.
-#     In Advances in Neural Information Processing Systems, pages 6103–6113, 2018.
+#     In Advances in Neural Information Processing Systems, pages 6103-6113, 2018.
 ############################################################
 import argparse
 import copy
@@ -15,20 +15,21 @@ import os
 import pickle
 import sys
 
-sys.path.append(os.path.realpath("."))
-
 import torch
 import torchvision
 import torchvision.transforms as transforms
 
+sys.path.append(os.path.realpath("."))
 from learning_module import get_transform
 from learning_module import (
+    TINYIMAGENET_ROOT,
     to_log_file,
     now,
-    normalize_cifar,
-    un_normalize_cifar,
+    normalize_data,
+    un_normalize_data,
     load_model_from_checkpoint,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):
@@ -48,13 +49,55 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_test = get_transform(args.normalize, False)
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
         )
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
+        )
+    elif args.dataset.lower() == "tinyimagenet_first":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="all",
         )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_fc.py.")
@@ -87,7 +130,6 @@ def main(args):
     base_indices = (
         setup["base indices"] if args.base_indices is None else args.base_indices
     )
-
     # Craft poisons
     poison_iterations = args.crafting_iters
     poison_perturbation_norms = []
@@ -107,13 +149,17 @@ def main(args):
 
     # fill list of tuples of poison images and labels
     poison_tuples = []
-    target_img = un_normalize_cifar(target_img) if args.normalize else target_img
+    target_img = (
+        un_normalize_data(target_img, args.dataset) if args.normalize else target_img
+    )
     beta = 4.0 if args.normalize else 0.1
 
     base_tuples = list(zip(base_imgs, base_labels))
     for base_img, label in base_tuples:
         # unnormalize the images for optimization
-        b_unnormalized = un_normalize_cifar(base_img) if args.normalize else base_img
+        b_unnormalized = (
+            un_normalize_data(base_img, args.dataset) if args.normalize else base_img
+        )
         objective_vals = [10e8]
         step_size = args.step_size
 
@@ -125,10 +171,13 @@ def main(args):
         done_with_fc = False
         i = 0
         while not done_with_fc and i < poison_iterations:
-            x.requires_grad_()
+            x.requires_grad = True
             if args.normalize:
                 mini_batch = torch.stack(
-                    [normalize_cifar(x), normalize_cifar(target_img)]
+                    [
+                        normalize_data(x, args.dataset),
+                        normalize_data(target_img, args.dataset),
+                    ]
                 ).to(device)
             else:
                 mini_batch = torch.stack([x, target_img]).to(device)

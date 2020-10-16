@@ -135,6 +135,7 @@ class ResNet(nn.Module):
         self,
         block,
         num_blocks,
+        conv1_size=3,
         num_classes=10,
         train_dp=0,
         test_dp=0,
@@ -144,8 +145,9 @@ class ResNet(nn.Module):
     ):
         super(ResNet, self).__init__()
         self.in_planes = 64
-
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        kernel_size, stride, padding = {3: [3, 1, 1], 7: [7, 2, 3]}[conv1_size]
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=kernel_size, stride=stride, padding=padding,
+                               bias=False)
         self.bn1 = nn.BatchNorm2d(64)
 
         nblks = sum(num_blocks)
@@ -302,73 +304,13 @@ class ResNet(nn.Module):
         return [param for name, param in self.named_parameters() if "linear" in name]
 
 
-def ResNet18(train_dp=0, test_dp=0, droplayer=0, bdp=0):
-    return ResNet(
-        BasicBlock,
-        [2, 2, 2, 2],
-        train_dp=train_dp,
-        test_dp=test_dp,
-        droplayer=droplayer,
-        bdp=bdp,
-    )
+def resnet18(num_classes=10, conv1_size=3):
+    return ResNet(BasicBlock, [2, 2, 2, 2], conv1_size=conv1_size, num_classes=num_classes)
 
 
-def ResNet34(train_dp=0, test_dp=0, droplayer=0):
-    return ResNet(
-        BasicBlock,
-        [3, 4, 6, 3],
-        train_dp=train_dp,
-        test_dp=test_dp,
-        droplayer=droplayer,
-    )
+def resnet34(num_classes=10, conv1_size=3):
+    return ResNet(BasicBlock, [3, 4, 6, 3], conv1_size=conv1_size, num_classes=num_classes)
 
 
-def ResNet50(train_dp=0, test_dp=0, droplayer=0, bdp=0):
-    return ResNet(
-        Bottleneck,
-        [3, 4, 6, 3],
-        train_dp=train_dp,
-        test_dp=test_dp,
-        droplayer=droplayer,
-        bdp=bdp,
-    )
-
-
-def ResNet101(train_dp=0, test_dp=0, droplayer=0):
-    return ResNet(
-        Bottleneck,
-        [3, 4, 23, 3],
-        train_dp=train_dp,
-        test_dp=test_dp,
-        droplayer=droplayer,
-    )
-
-
-def ResNet152(train_dp=0, test_dp=0, droplayer=0):
-    return ResNet(
-        Bottleneck,
-        [3, 8, 36, 3],
-        train_dp=train_dp,
-        test_dp=test_dp,
-        droplayer=droplayer,
-    )
-
-
-def resnet18(num_channels=3, num_classes=10):
-    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
-
-
-def resnet34(num_channels=3, num_classes=10):
-    return ResNet(BasicBlock, [3, 4, 6, 3], num_classes=num_classes)
-
-
-def resnet50(num_channels=3, num_classes=10):
-    return ResNet(Bottleneck, [3, 4, 6, 3], num_classes=num_classes)
-
-
-def resnet101(num_channels=3, num_classes=10):
-    return ResNet(Bottleneck, [3, 4, 23, 3], num_classes=num_classes)
-
-
-def resnet152(num_channels=3, num_classes=10):
-    return ResNet(Bottleneck, [3, 8, 36, 3], num_classes=num_classes)
+def resnet50(num_classes=10, conv1_size=3):
+    return ResNet(Bottleneck, [3, 4, 6, 3], conv1_size=conv1_size, num_classes=num_classes)

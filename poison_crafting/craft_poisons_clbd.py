@@ -12,8 +12,6 @@ import os
 import pickle
 import sys
 
-sys.path.append(os.path.realpath("."))
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -22,18 +20,20 @@ import torchvision
 from PIL import Image
 from torchvision import transforms
 
+sys.path.append(os.path.realpath("."))
 from learning_module import (
+    TINYIMAGENET_ROOT,
     load_model_from_checkpoint,
     now,
     get_transform,
     NormalizeByChannelMeanStd,
     data_mean_std_dict,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 class AttackPGD(nn.Module):
-    """Class for the PGD adversarial attack
-    """
+    """Class for the PGD adversarial attack"""
 
     def __init__(self, basic_net, config):
         super(AttackPGD, self).__init__()
@@ -73,7 +73,7 @@ def main(args):
         void
     """
     print(now(), "craft_poisons_clbd.py main() running...")
-    mean, std = data_mean_std_dict[args.dataset]
+    mean, std = data_mean_std_dict[args.dataset.lower()]
     mean = list(mean)
     std = list(std)
     normalize_net = NormalizeByChannelMeanStd(mean, std)
@@ -89,13 +89,55 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_test = get_transform(False, False)
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
         )
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
+        )
+    elif args.dataset.lower() == "tinyimagenet_first":
+        transform_test = get_transform(False, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_test = get_transform(False, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_test = get_transform(False, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="all",
         )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_clbd.py.")
@@ -210,7 +252,9 @@ def main(args):
         pickle.dump(poisoned_tuples, handle, protocol=pickle.HIGHEST_PROTOCOL)
     with open(os.path.join(args.poisons_path, "target.pickle"), "wb") as handle:
         pickle.dump(
-            target_tuple, handle, protocol=pickle.HIGHEST_PROTOCOL,
+            target_tuple,
+            handle,
+            protocol=pickle.HIGHEST_PROTOCOL,
         )
     with open(os.path.join(args.poisons_path, "base_indices.pickle"), "wb") as handle:
         pickle.dump(base_indices, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -251,7 +295,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--poison_setups",
         type=str,
-        default="./poison_setups_transfer_learning.pickle",
+        default="./poison_setups/cifar10_transfer_learning.pickle",
         help="poison setup pickle file",
     )
     parser.add_argument("--setup_idx", type=int, default=0, help="Which setup to use")
@@ -272,5 +316,10 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    if args.dataset.lower() == "cifar10":
+        args.image_size = 32
+    elif "tinyimagenet" in args.dataset.lower():
+        args.image_size = 64
 
     main(args)

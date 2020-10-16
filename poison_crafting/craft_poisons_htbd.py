@@ -13,8 +13,6 @@ import os
 import pickle
 import sys
 
-sys.path.append(os.path.realpath("."))
-
 import numpy as np
 import torch
 import torch.utils.data
@@ -22,13 +20,16 @@ import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
 
+sys.path.append(os.path.realpath("."))
 from learning_module import (
+    TINYIMAGENET_ROOT,
     load_model_from_checkpoint,
     now,
     get_transform,
     NormalizeByChannelMeanStd,
     data_mean_std_dict,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 class LossMeter(object):
@@ -75,9 +76,7 @@ def main(args):
         void
     """
     print(now(), "craft_poisons_htbd.py main() running...")
-    mean, std = data_mean_std_dict[args.dataset]
-    mean = list(mean)
-    std = list(std)
+    mean, std = data_mean_std_dict[args.dataset.lower()]
     normalization_net = NormalizeByChannelMeanStd(mean, std)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     net = load_model_from_checkpoint(
@@ -89,7 +88,7 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_test = get_transform(False, False)
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
@@ -97,6 +96,52 @@ def main(args):
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
         )
+        num_per_class = 5000
+    elif args.dataset.lower() == "tinyimagenet_first":
+        transform_test = get_transform(False, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        num_per_class = 500
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_test = get_transform(False, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        num_per_class = 500
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_test = get_transform(False, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
+        num_per_class = 500
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_htbd.py.")
         sys.exit()
@@ -115,7 +160,6 @@ def main(args):
     trigger = Image.open(args.trigger_path).convert("RGB")
     trigger = trans_trigger(trigger).unsqueeze(0).to(device)
 
-    # datasets and dataloaders (CIFAR10)
     target_img_idx = (
         setup["target index"] if args.target_img_idx is None else args.target_img_idx
     )
@@ -128,8 +172,9 @@ def main(args):
 
     # Get target images
     trainset_targets = np.array(trainset.targets)
+    target_class = target_class
     tar_idx = np.where(trainset_targets == target_class)[0]
-    indexes = np.arange(0, 5000)
+    indexes = np.arange(0, num_per_class)
     indexes = np.random.choice(indexes, len(base_indices), replace=False)
     target_img_idx = np.array(tar_idx[indexes]).astype(int)
 
@@ -150,34 +195,37 @@ def main(args):
     for i in range(0, len(base_imgs), batch_size):
 
         remaining = np.min((batch_size, len(base_imgs) - i))
-        input1 = target_imgs[i : i + remaining]
-        input2 = base_imgs[i : i + remaining]
-        input1 = input1.to(device)
-        input2 = input2.to(device)
+        input_target_imgs = target_imgs[i : i + remaining]
+        input_bases = base_imgs[i : i + remaining]
+        input_target_imgs = input_target_imgs.to(device)
+        input_bases = input_bases.to(device)
 
-        for z in range(input1.size(0)):
-            # paste the trigger on input1
-            input1[
+        for z in range(input_target_imgs.size(0)):
+            # paste the trigger on input_target_imgs
+            input_target_imgs[
                 z,
                 :,
                 start_y : start_y + args.patch_size,
                 start_x : start_x + args.patch_size,
             ] = trigger
 
-        # get features of input1
+        # get features of input_target_imgs
         if args.normalize:
-            input1 = normalization_net(input1)
-        feat1 = net(input1, penu=True)
+            input_target_imgs = normalization_net(input_target_imgs)
+        feat1 = net(input_target_imgs, penu=True)
         feat1 = feat1.detach().clone()
 
         for j in range(args.crafting_iters):
-            input2.requires_grad_()
+            input_bases.requires_grad_()
             lr1 = adjust_learning_rate(lr, j, args.dataset)
 
-            # get features of input2
+            # get features of input_bases
             if args.normalize:
-                input2 = normalization_net(input2)
-            feat2 = net(input2, penu=True)
+                input_bases_proc = normalization_net(input_bases)
+            else:
+                input_bases_proc = input_bases
+
+            feat2 = net(input_bases_proc, penu=True)
             feat11 = feat1.clone()
             dist = torch.cdist(feat1, feat2)
             for _ in range(feat2.size(0)):
@@ -187,14 +235,14 @@ def main(args):
                 dist[dist_min_index[0], dist_min_index[1]] = 1e5
 
             loss = torch.norm(feat1 - feat2) ** 2
-            losses.update(loss.item(), input1.size(0))
+            losses.update(loss.item(), input_target_imgs.size(0))
+            loss.backward()
 
-            grad = torch.autograd.grad(loss, [input2])[0]
-            input2 = input2 - lr1 * grad
-            pert = input2 - base_imgs[i : i + remaining]
+            input_bases = input_bases - lr1 * input_bases.grad
+            pert = input_bases - base_imgs[i : i + remaining]
             pert = torch.clamp(pert, -args.epsilon, args.epsilon).detach_()
-            input2 = pert + base_imgs[i : i + remaining]
-            input2 = input2.clamp(0, 1)
+            input_bases = pert + base_imgs[i : i + remaining]
+            input_bases = input_bases.clamp(0, 1)
 
             if j % 100 == 0:
                 logging.info(
@@ -202,13 +250,18 @@ def main(args):
                         0, i, j, lr1, losses.val, losses.avg
                     )
                 )
+                print(
+                    "Epoch: {:2d} | i: {} | iter: {:5d} | LR: {:2.5f} | Loss Val: {:5.3f} | Loss Avg: {:5.3f}".format(
+                        0, i, j, lr1, losses.val, losses.avg
+                    )
+                )
 
             if loss.item() < 10 or j == (args.crafting_iters - 1):
                 logging.info("Max_Loss: {}".format(loss.item()))
-                for k in range(input2.size(0)):
+                for k in range(input_bases.size(0)):
                     poisoned_tuples.append(
                         (
-                            transforms.ToPILImage()(input2[k].cpu()),
+                            transforms.ToPILImage()(input_bases[k].cpu()),
                             int(base_labels[i + k]),
                         )
                     )
@@ -272,7 +325,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--poison_setups",
         type=str,
-        default="./poison_setups_transfer_learning.pickle",
+        default="./poison_setups/cifar10_transfer_learning.pickle",
         help="poison setup pickle file",
     )
     parser.add_argument("--setup_idx", type=int, default=0, help="Which setup to use")
@@ -294,6 +347,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_path",
         type=str,
+        nargs="+",
         default=["pretrained_models/ResNet18_CIFAR100_A.pth"],
         help="Checkpoint file",
     )
@@ -302,5 +356,10 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    if args.dataset.lower() == "cifar10":
+        args.image_size = 32
+    elif "tinyimagenet" in args.dataset.lower():
+        args.image_size = 64
 
     main(args)

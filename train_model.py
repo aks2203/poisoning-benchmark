@@ -18,6 +18,7 @@ import torch.utils.data as data
 import torchvision
 
 from learning_module import (
+    TINYIMAGENET_ROOT,
     train,
     test,
     adjust_learning_rate,
@@ -27,6 +28,7 @@ from learning_module import (
     PoisonedDataset,
     get_transform,
 )
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):
@@ -36,6 +38,8 @@ def main(args):
     return:
         void
     """
+
+    print(args)
 
     print(now(), "train_model.py main() running.")
     np.random.seed(args.seed)
@@ -83,6 +87,87 @@ def main(args):
         )
         testloader = torch.utils.data.DataLoader(testset, batch_size=128, shuffle=False)
 
+    elif args.dataset.lower() == "tinyimagenet_first":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="firsthalf",
+        )
+        trainset = PoisonedDataset(
+            trainset, (), args.trainset_size, transform=transform_train
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="lasthalf",
+        )
+        trainset = PoisonedDataset(
+            trainset, (), args.trainset_size, transform=transform_train
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_train = get_transform(
+            args.normalize, args.train_augment, dataset=args.dataset
+        )
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_train,
+            classes="all",
+        )
+        trainset = PoisonedDataset(
+            trainset, (), args.trainset_size, transform=transform_train
+        )
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=64, num_workers=1, shuffle=True
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="all",
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=64, num_workers=1, shuffle=False
+        )
+
     else:
         print("Dataset not yet implemented. Ending run from train_model.py.")
         sys.exit()
@@ -116,11 +201,11 @@ def main(args):
     loss = 0
     all_losses = []
     epoch = start_epoch
+    print(f"Training for {args.epochs - start_epoch} epochs.")
     for epoch in range(start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch, args.lr_schedule, args.lr_factor)
         loss, acc = train(net, trainloader, optimizer, criterion, device)
         all_losses.append(loss)
-
         if (epoch + 1) % args.val_period == 0:
             natural_acc = test(net, testloader, device)
             print(
@@ -207,7 +292,10 @@ if __name__ == "__main__":
         "--epochs", default=200, type=int, help="number of epochs for training"
     )
     parser.add_argument(
-        "--batch_size", default=128, type=int, help="batch size for training and testing"
+        "--batch_size",
+        default=128,
+        type=int,
+        help="batch size for training and testing",
     )
     parser.add_argument("--optimizer", default="SGD", type=str, help="optimizer")
     parser.add_argument(
@@ -216,7 +304,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", default="CIFAR10", type=str, help="dataset")
     parser.add_argument("--trainset_size", default=None, type=int, help="Trainset size")
     parser.add_argument(
-        "--val_period", default=20, type=int, help="print every __ epoch"
+        "--val_period", default=20, type=int, help="print every __ epochs"
     )
     parser.add_argument(
         "--output", default="output_default", type=str, help="output subdirectory"
@@ -238,10 +326,6 @@ if __name__ == "__main__":
     parser.add_argument("--no-normalize", dest="normalize", action="store_false")
     parser.set_defaults(normalize=True)
     parser.add_argument("--train_augment", dest="train_augment", action="store_true")
-    parser.add_argument(
-        "--no-train_augment", dest="train_augment", action="store_false"
-    )
-    parser.set_defaults(train_augment=False)
     args = parser.parse_args()
 
     main(args)

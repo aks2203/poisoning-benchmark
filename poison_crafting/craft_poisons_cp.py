@@ -22,14 +22,16 @@ import torchvision.transforms as transforms
 from ConvexPolytope.trainer import make_convex_polytope_poisons
 
 from learning_module import (
+    TINYIMAGENET_ROOT,
     now,
     data_mean_std_dict,
     get_transform,
     to_log_file,
-    un_normalize_cifar,
+    un_normalize_data,
     load_model_from_checkpoint,
 )
 from models import *
+from tinyimagenet_module import TinyImageNet
 
 
 def main(args):
@@ -46,13 +48,55 @@ def main(args):
 
     ####################################################
     #               Dataset
-    if args.dataset == "CIFAR10":
+    if args.dataset.lower() == "cifar10":
         transform_test = get_transform(args.normalize, False)
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform_test
         )
         trainset = torchvision.datasets.CIFAR10(
             root="./data", train=True, download=True, transform=transform_test
+        )
+    elif args.dataset.lower() == "tinyimagenet_first":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="firsthalf",
+        )
+    elif args.dataset.lower() == "tinyimagenet_last":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="lasthalf",
+        )
+    elif args.dataset.lower() == "tinyimagenet_all":
+        transform_test = get_transform(args.normalize, False, dataset=args.dataset)
+        trainset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="train",
+            transform=transform_test,
+            classes="all",
+        )
+        testset = TinyImageNet(
+            TINYIMAGENET_ROOT,
+            split="val",
+            transform=transform_test,
+            classes="all",
         )
     else:
         print("Dataset not yet implemented. Exiting from craft_poisons_cp.py.")
@@ -112,7 +156,7 @@ def main(args):
     base_tensor_list = [bt.to("cuda") for bt in base_tensor_list]
 
     poison_init = base_tensor_list
-    mean, std = data_mean_std_dict[args.dataset]
+    mean, std = data_mean_std_dict[args.dataset.lower()]
     poison_tuple_list, recon_loss = make_convex_polytope_poisons(
         sub_net_list,
         target_net,
@@ -137,17 +181,14 @@ def main(args):
         end2end=args.end2end,
     )
 
-    torch.save(
-        {"poison": poison_tuple_list, "idx": base_indices, "recon-loss": recon_loss},
-        os.path.join(chk_path, "poison.pth"),
-    )
-
     # move poisons to PIL format
     if args.normalize:
-        target = un_normalize_cifar(target.squeeze(0))
+        target = un_normalize_data(target.squeeze(0), args.dataset)
         for i in range(len(poison_tuple_list)):
             poison_tuple_list[i] = (
-                transforms.ToPILImage()(un_normalize_cifar(poison_tuple_list[i][0])),
+                transforms.ToPILImage()(
+                    un_normalize_data(poison_tuple_list[i][0], args.dataset)
+                ),
                 poison_tuple_list[i][1],
             )
     else:
@@ -165,7 +206,7 @@ def main(args):
             torch.max(
                 torch.abs(
                     transforms.ToTensor()(poison_tensor)
-                    - un_normalize_cifar(base_tensor_list[idx].cpu())
+                    - un_normalize_data(base_tensor_list[idx].cpu(), args.dataset)
                 )
             ).item()
         )
@@ -275,7 +316,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--poison_setups",
         type=str,
-        default="./poison_setups_transfer_learning.pickle",
+        default="./poison_setups/cifar10_transfer_learning.pickle",
         help="poison setup pickle file",
     )
     parser.add_argument("--setup_idx", type=int, default=0, help="Which setup to use")
