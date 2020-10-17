@@ -254,7 +254,7 @@ if __name__ == "__main__":
     parser.add_argument("--target_model", default="resnet18", type=str)
     parser.add_argument(
         "--target_model_path",
-        default="pretrained_models/ResNet18_CIFAR100_A.pth",
+        default=None,
         type=str,
     )
     parser.add_argument("--normalize", dest="normalize", action="store_true")
@@ -323,5 +323,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    if args.target_model_path == None:
+        args.target_model_path = args.model_path
 
     main(args)

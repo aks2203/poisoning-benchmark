@@ -321,5 +321,6 @@ if __name__ == "__main__":
         args.image_size = 32
     elif "tinyimagenet" in args.dataset.lower():
         args.image_size = 64
+        args.trigger_path = "poison_crafting/triggers/clbd_8.png"
 
     main(args)
