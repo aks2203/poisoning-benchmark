@@ -81,8 +81,8 @@ def main(args):
                 sys.exit()
 
             target_img_tensor = transforms.ToTensor()(target_img_pil)
-            target_img_tensor[:, starty : starty + args.patch_patch_size,
-                              startx : startx + args.patch_patch_size] = patch
+            target_img_tensor[:, starty : starty + args.patch_size,
+                              startx : startx + args.patch_size] = patch
             target_img_pil = transforms.ToPILImage()(target_img_tensor)
 
         else:
