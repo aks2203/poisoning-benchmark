@@ -1,5 +1,7 @@
 # Just How Toxic is Data Poisoning? A Unified Benchmark for Backdoor and Data Poisoning Attacks
 
+**Updated to include new benchmarks on TinyImageNet dataset (November 2020)**
+
 This repository is the official implementation of [Just How Toxic is Data Poisoning? A Unified Benchmark for Backdoor and Data Poisoning Attacks](https://arxiv.org/abs/2006.12557). 
 
 ### CIFAR-10
