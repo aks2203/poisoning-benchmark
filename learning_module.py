@@ -31,7 +31,7 @@ data_mean_std_dict = {
 
 model_paths = {
     "cifar10": {
-        "whitebox": "pretrained_models/ResNet18_CIFAR100_A.pth",
+        "whitebox": "pretrained_models/ResNet18_CIFAR100.pth",
         "blackbox": [
             "pretrained_models/MobileNetV2_CIFAR100.pth",
             "pretrained_models/VGG11_CIFAR100.pth",
