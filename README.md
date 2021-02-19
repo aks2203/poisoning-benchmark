@@ -51,7 +51,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor       |  0        |
 |Hidden Trigger Backdoor    |  0        |
 
-###### For more information on each attack consult [our paper](https://arxiv.org/abs/2006.12557) and the original sources listed there.)
+###### For more information on each attack consult [our paper](https://arxiv.org/abs/2006.12557) and the original sources listed there.
 
 ---
 
