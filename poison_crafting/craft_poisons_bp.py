@@ -175,7 +175,7 @@ def main(args):
 
     # move poisons to PIL format
     if args.normalize:
-        target = un_normalize_data(target.squeeze(0))
+        target = un_normalize_data(target.squeeze(0), args.dataset)
         for i in range(len(poison_tuple_list)):
             poison_tuple_list[i] = (
                 transforms.ToPILImage()(
