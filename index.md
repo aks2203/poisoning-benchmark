@@ -10,8 +10,6 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 
 ## CIFAR-10
 #### Transfer Learning
-
-<p style="text-align: center;">
     
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
@@ -20,12 +18,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Bullseye Polytope              | 85.0               | 8.5          |
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
-
-</p>
     
 #### From Scratch Training
-
-<center>
         
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
 | --------------------------| -----------------:|------------------:|----------:|-----------:|
@@ -34,9 +28,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Bullseye Polytope          |  3                |  3                |  1        |  2.33      |   
 |Witches' Brew              |  45               |  25               |  8        |  26.00     |   
 |Clean Label Backdoor       |  0                |  1                |  2        |  1.00      | 
-|Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      | 
-
-</center>
+|Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      |
     
 ***
 
@@ -53,11 +45,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
 
-</center>
-
 #### From Scratch Training
-
-<center>
     
 | Attack                    | VGG11 (%) |
 | --------------------------|----------:|
@@ -67,8 +55,6 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Witches' Brew              |  32       |  
 |Clean Label Backdoor       |  0        |
 |Hidden Trigger Backdoor    |  0        |
-
-</center>
         
 ###### For more information on each attack consult [our paper](https://arxiv.org/abs/2006.12557) and the original sources listed there.
 
