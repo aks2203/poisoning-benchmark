@@ -35,8 +35,6 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 ## TinyImageNet
 #### Transfer Learning
 
-<center>
-
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
 |Feature Collision              | 16.0               | 3.50         |
