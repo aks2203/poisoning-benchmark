@@ -11,7 +11,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 ## CIFAR-10
 #### Transfer Learning
 
-<center>
+<p style="text-align: center;">
     
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
@@ -21,7 +21,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
 
-</center>
+</p>
     
 #### From Scratch Training
 
