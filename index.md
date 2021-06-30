@@ -1,11 +1,11 @@
-# Just How Toxic is Data Poisoning? A Unified Benchmark for Backdoor and Data Poisoning Attacks
+<p style="text-align: center;"> Avi Schwarzschild, Micah Goldblum, Arjun Gupta, John Dickerson, and Tom Goldstein </p>
 
-**Updated to include new benchmarks on TinyImageNet dataset (November 2020)**
+<p style="text-align: center;"> University of Maryland, College Park </p>
 
 This repository is the official implementation of [Just How Toxic is Data Poisoning? A Unified Benchmark for Backdoor and Data Poisoning Attacks](https://arxiv.org/abs/2006.12557). 
 
-### CIFAR-10
-##### Transfer Learning
+## CIFAR-10
+#### Transfer Learning
 
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
@@ -16,7 +16,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
 
     
-##### From Scratch Training
+#### From Scratch Training
 
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
 | --------------------------| -----------------:|------------------:|----------:|-----------:|
@@ -29,8 +29,8 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 
 ***
 
-### TinyImageNet
-##### Transfer Learning
+## TinyImageNet
+#### Transfer Learning
 
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
@@ -40,7 +40,7 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Clean Label Backdoor           | 3.0                | 3.5          |
 |Hidden Trigger Backdoor        | 2.0                | 4.0          |
     
-##### From Scratch Training
+#### From Scratch Training
 
 | Attack                    | VGG11 (%) |
 | --------------------------|----------:|
