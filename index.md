@@ -8,19 +8,20 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 
 ***
 
-## CIFAR-10
-#### Transfer Learning
-    
+### CIFAR-10
+##### Transfer Learning
+
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
-|Feature Collision              | 16.0               | 3.50         |
-|Convex Polytope                | 24.0               | 4.5          |
+|Feature Collision              | 22.0               | 7.0          |
+|Convex Polytope                | 33.0               | 7.0          |
 |Bullseye Polytope              | 85.0               | 8.5          |
-|Clean Label Backdoor           | 3.0                | 3.5          |
-|Hidden Trigger Backdoor        | 2.0                | 4.0          |
+|Clean Label Backdoor           | 5.0                | 6.5          |
+|Hidden Trigger Backdoor        | 10.0               | 9.5          |
+
     
-#### From Scratch Training
-        
+##### From Scratch Training
+
 | Attack                    | ResNet-18 (%)     | MobileNetV2 (%)   | VGG11 (%) | Average (%)|
 | --------------------------| -----------------:|------------------:|----------:|-----------:|
 |Feature Collision          |  0                |  1                |  3        |  1.33      |   
@@ -28,23 +29,23 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 |Bullseye Polytope          |  3                |  3                |  1        |  2.33      |   
 |Witches' Brew              |  45               |  25               |  8        |  26.00     |   
 |Clean Label Backdoor       |  0                |  1                |  2        |  1.00      | 
-|Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      |
-    
+|Hidden Trigger Backdoor    |  0                |  4                |  1        |  2.67      | 
+
 ***
 
-## TinyImageNet
-#### Transfer Learning
+### TinyImageNet
+##### Transfer Learning
 
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
-|Feature Collision              | 16.0               | 3.50         |
-|Convex Polytope                | 24.0               | 4.5          |
+|Feature Collision              | 49.0               | 32.0         |
+|Convex Polytope                | 14.0               | 1.0          |
 |Bullseye Polytope              | 100.0              | 10.5         |
-|Clean Label Backdoor           | 3.0                | 3.5          |
-|Hidden Trigger Backdoor        | 2.0                | 4.0          |
-
-#### From Scratch Training
+|Clean Label Backdoor           | 3.0                | 1.0          |
+|Hidden Trigger Backdoor        | 3.0                | 0.5          |
     
+##### From Scratch Training
+
 | Attack                    | VGG11 (%) |
 | --------------------------|----------:|
 |Feature Collision          |  4        |  
