@@ -9,11 +9,11 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
-|Feature Collision              | 16.0               | 3.50         |
-|Convex Polytope                | 24.0               | 4.5          |
+|Feature Collision              | 22.0               | 7.0          |
+|Convex Polytope                | 33.0               | 7.0          |
 |Bullseye Polytope              | 85.0               | 8.5          |
-|Clean Label Backdoor           | 3.0                | 3.5          |
-|Hidden Trigger Backdoor        | 2.0                | 4.0          |
+|Clean Label Backdoor           | 5.0                | 6.5          |
+|Hidden Trigger Backdoor        | 10.0               | 9.5          |
 
     
 ##### From Scratch Training
@@ -34,11 +34,11 @@ This repository is the official implementation of [Just How Toxic is Data Poison
 
 | Attack                        | White-box (%)      | Black-box (%)|
 | ------------------            |-------------------:|-------------:|
-|Feature Collision              | 16.0               | 3.50         |
-|Convex Polytope                | 24.0               | 4.5          |
+|Feature Collision              | 49.0               | 32.0         |
+|Convex Polytope                | 14.0               | 1.0          |
 |Bullseye Polytope              | 100.0              | 10.5         |
-|Clean Label Backdoor           | 3.0                | 3.5          |
-|Hidden Trigger Backdoor        | 2.0                | 4.0          |
+|Clean Label Backdoor           | 3.0                | 1.0          |
+|Hidden Trigger Backdoor        | 3.0                | 0.5          |
     
 ##### From Scratch Training
 
